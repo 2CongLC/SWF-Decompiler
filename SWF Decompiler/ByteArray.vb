@@ -563,13 +563,15 @@ Public Function ConvertToHex() As String
     Return String.Join("", source.ToArray().Select(Function(by) by.ToString("X2")))
 End Function
 
-Public  Function ConvertFroHex(ByVal hex As String) As Byte()
-    Dim NumberChars As Integer = hex.Length
+Public  Function ConvertFroHex() As Byte()
+    Dim hex = Encoding.Default.Getstring(source.ToArray())
+Dim NumberChars As Integer = hex.Length
     Dim bytes As Byte() = New Byte(NumberChars \ 2 - 1) {}
     For i As Integer = 0 To NumberChars - 1 Step 2
         bytes(i \ 2) = Convert.ToByte(hex.Substring(i, 2), 16)
     Next
-    Return bytes                                                   
+    Return bytes
+ End Function                                                       
 
                                                 
                                             
