@@ -94,8 +94,13 @@ Public Class SWF
         Return _version(0)
     End Function
 
-    Public Function Filesize() As Integer
-        Return (_fileSize(0) & _fileSize(1) & _fileSize(2) & _fileSize(3)) / 1024
+    Public Function Filesize() As UInteger
+        Dim len As UInteger = 0
+        len = len Or (CUInt(_filesize(0)) << 0)
+        len = len Or (CUInt(_filesize(1)) << 8)
+        len = len Or (CUInt(_filesize(2)) << 16)
+        len = len Or (CUInt(_filesize(3)) << 24)
+        Return len
     End Function
 
     Public ReadOnly Property Width as integer
