@@ -489,5 +489,59 @@ Public Class ByteArray
 
 #End Region
 
+#Region "Mã hóa dữ liệu"
 
+Public Sub MochiDecrypt() 
+    
+    Dim data as ByteArray = New ByteArray()
+    data.WriteBytes(source,8)
+    Dim payload as Byte() = data.ToArray()
+    
+    Dim S As New List(Of Byte)
+    Dim i As Integer = 0
+    Dim j As Integer = 0
+    Dim k As Integer = 0
+    Dim n As Integer = 0
+    Dim u As Integer = 0
+    Dim v As Integer = 0
+
+    n = payload.Length - 32
+    While i < 256
+        S.Add(CByte(i))
+        i += 1
+    End While
+    j = 0
+    i = 0
+    While i < 256
+        j = (j + S(i) + payload(n + (i And 31))) And 255
+        u = S(i)
+        S(i) = S(j)
+        S(j) = CByte(u)
+        i += 1
+    End While
+    If n > 131072 Then
+        n = 131072
+    End If
+    j = 0
+    i = 0
+    k = 0
+    While k < n
+        i = (i + 1) And 255
+        u = S(i)
+        j = (j + u) And 255
+        v = S(j)
+        S(i) = CByte(v)
+        S(j) = CByte(u)
+        payload(k) = CByte(payload(k) Xor S((u + v) And 255))
+        k += 1
+    End While
+    Dim ms as MemoryStream = New MemoryStream(payload)
+    source = ms                                               
+    ms.close()
+    source.position = 0                                               
+End Sub
+
+                                                
+#End Region
+                                                
 End Class
