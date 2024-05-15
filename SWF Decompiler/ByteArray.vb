@@ -537,8 +537,8 @@ Public Sub MochiDecrypt()
     End While
     Dim ms as MemoryStream = New MemoryStream(payload)
     source = ms                                               
-    ms.close()
-    source.position = 0                                               
+    source.position = 0 
+    ms.close()                                               
 End Sub
 
                                                 
