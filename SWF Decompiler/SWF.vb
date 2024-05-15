@@ -79,10 +79,6 @@ Public Class SWF
             FrameSize()
         End If
 
-
-
-
-
     End Sub
 
 
