@@ -90,8 +90,8 @@ Public Class SWF
         Return Encoding.Default.GetString(_signature)
     End Function
 
-    Public Function Version() As Integer
-        Return _version(0)
+    Public Function Version() As UInteger
+        Return CUInt(_version(0))
     End Function
 
     Public Function Filesize() As UInteger
@@ -114,15 +114,6 @@ Public ReadOnly Property Heigth as integer
       Return mHeigth
     End Get
 End Property
-
-
-Private Function GetNextByte(Byval buffer as byte()) as Byte
-Dim index as integer = 0
- Dim result as byte = buffer(index)
-    index +=1
-    Return result
-End Function
-
 
     Public Sub FrameSize()
         Dim b As Integer = GetNextByte(_framesize)
@@ -185,44 +176,34 @@ End Function
 
     End Function
 
-
-
     Private Function CompressCWS() As Byte()
 
-        Dim fsize As ByteArray = New ByteArray()
-        fsize.WriteBytes(source, 4, 4) 'Offset = 4, Length = 4
         Dim data As ByteArray = New ByteArray()
         data.WriteBytes(source, 8)
         data.Compress()
         Dim buffer As ByteArray = New ByteArray()
         buffer.WriteMultiByte("CWS", "us-ascii")
         buffer.WriteByte(Version)
-        buffer.WriteBytes(fsize)
+        buffer.WriteByte(Filesize)
         buffer.WriteBytes(data)
         Return buffer.ToArray()
     End Function
 
-    Public Function DeCompressCWS() As Byte()
+    Private Function DeCompressCWS() As Byte()
 
-        Dim fsize As ByteArray = New ByteArray()
-        fsize.WriteBytes(source, 4, 4) 'Offset = 4, Length = 4
         Dim data As ByteArray = New ByteArray()
         data.WriteBytes(source, 8)
         data.Uncompress()
         Dim buffer As ByteArray = New ByteArray()
         buffer.WriteMultiByte("FWS", "us-ascii")
         buffer.WriteByte(Version)
-        buffer.WriteBytes(fsize)
+        buffer.WriteByte(Filesize)
         buffer.WriteBytes(data)
         Return buffer.ToArray()
 
     End Function
 
-    Public Function CompressZWS() As Byte()
-
-
-        Dim fsize As ByteArray = New ByteArray()
-        fsize.WriteBytes(source, 4, 4) 'Offset = 4, Length = 4
+    Private Function CompressZWS() As Byte()
 
         Dim data As ByteArray = New ByteArray()
         data.WriteBytes(source, 8)
@@ -239,7 +220,7 @@ End Function
         Dim buffer As ByteArray = New ByteArray()
         buffer.WriteMultiByte("ZWS", "us-ascii")
         buffer.WriteByte(Version)
-        buffer.WriteBytes(fsize)
+        buffer.WriteBytes(Filesize)
         buffer.WriteByte(compressedLen)
         buffer.WriteBytes(lzmaprops)
         buffer.WriteBytes(lzmadata)
@@ -248,24 +229,21 @@ End Function
 
     End Function
 
-    Public Function DeCompressZWS() As Byte()
+    Private Function DeCompressZWS() As Byte()
 
-
-        Dim fsize As ByteArray = New ByteArray()
-        fsize.WriteBytes(source, 4, 4) 'Offset = 4, Length = 4
         Dim data As ByteArray = New ByteArray()
         data.WriteBytes(source, 12)
         data.Uncompress(CompressionAlgorithm.LZMA)
         Dim buffer As ByteArray = New ByteArray()
         buffer.WriteMultiByte("FWS", "us-ascii")
         buffer.WriteByte(Version)
-        buffer.WriteBytes(fsize)
+        buffer.WriteByte(Filesize)
         buffer.WriteBytes(data)
         Return buffer.ToArray()
 
     End Function
 
-    Enum CompressTionTypes
+Enum CompressTionTypes
     CWS
     ZWS
 End Enum
