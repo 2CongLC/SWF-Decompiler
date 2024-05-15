@@ -543,5 +543,18 @@ End Sub
 
                                                 
 #End Region
-                                                
+
+#Region " Trích xuất dữ liệu "
+    
+Public Function BitmapFromBytes(Byval offset As Integer,Byval length As Integer) As Bitmap
+    Dim data As Byte() = New Byte(length - 1) {}
+    Array.Copy(source.ToArray(), offset, data, 0, length)
+    Return DirectCast(System.ComponentModel.TypeDescriptor.GetConverter(GetType(Bitmap)).ConvertFrom(data), Bitmap)
+End Function
+
+                                            
+
+#End Region
+
+                          
 End Class
