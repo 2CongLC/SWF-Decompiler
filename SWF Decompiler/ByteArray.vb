@@ -493,7 +493,21 @@ Public Class ByteArray
          End Try 
                                             
     End Function
-
+                                                
+    Public Function TryGetHex(<out>Byref data as Byte())
+      Try
+          Dim hexstring as String = Encoding.Default.Getstring(source.ToArray())
+          If hexstring.All(char.IsAsciiHexDigit) = True Then
+             data = ConvertFromHex(hexstring)
+              Return True
+           Else
+              Return False
+           End if
+         Catch Ex as Exception
+                Return False
+         End Try 
+       End Function                                             
+                                                    
 #End Region
 
 #Region "Mã hóa dữ liệu"
@@ -563,8 +577,8 @@ Public Function ConvertToHex() As String
     Return String.Join("", source.ToArray().Select(Function(by) by.ToString("X2")))
 End Function
 
-Public  Function ConvertFromHex() As Byte()
-    Dim hexstring as string = Encoding.Default.Getstring(source.ToArray())
+Private  Function ConvertFromHex(Byval hexstring as string) As Byte()
+    
     Dim NumberChars As Integer = hexstring.Length
     Dim bytes As Byte() = New Byte(NumberChars \ 2 - 1) {}
     For i As Integer = 0 To NumberChars - 1 Step 2
