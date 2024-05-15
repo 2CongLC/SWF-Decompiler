@@ -494,7 +494,7 @@ Public Class ByteArray
                                             
     End Function
                                                 
-    Public Function TryGetHex(<out>Byref data as Byte())
+    Public Function TryGetHex(<out>Byref data as Byte()) as Boolean
       Try
           Dim hexstring as String = Encoding.Default.Getstring(source.ToArray())
           If hexstring.All(char.IsAsciiHexDigit) = True Then
