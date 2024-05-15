@@ -98,8 +98,15 @@ Public Class ByteArray
     Public Function ToArray() As Byte()
         Return source.ToArray()
     End Function
+    
     Public Function GetBuffer() As Byte()
         Return source.GetBuffer()
+    End Function
+
+    Public Function GetNextByte(Option index as integer =0) as Byte
+        Dim result as byte = source.ToArray()(index)
+        index +=1
+        Return result
     End Function
 
 #End Region
