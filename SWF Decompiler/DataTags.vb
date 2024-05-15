@@ -47,7 +47,26 @@ End Property
 
 Protected Property RawData As Byte()
 
+Sub New(data As Byte(), offset As Integer)
+        RawData = data
+        Offset = offset
 
+        TagCode = GetTagCode(RawData, offset)
+        Length = CInt(PickBits(RawData, offset, 10, 6))
+        offset += 2
+
+        If Length = &H3F Then
+            Length = CInt(PickBytes32(RawData, offset)) + 4
+            offset += 4
+        End If
+
+        Length += 2 ' tag and length の分
+        DataOffset = offset
+    End Sub
+
+    Public Function GetTagCode(data As Byte(), offset As Integer) As TagType
+        Return CType(PickBits(data, offset, 0, 10), TagType)
+    End Function
 
     Public Function PickBits(data As Byte(), offsetByte As Integer, offsetBit As Integer, lengthBit As Integer, Optional isLittleEndian As Boolean = True) As UInteger
         If lengthBit > 32 Then
