@@ -559,6 +559,12 @@ Public Function BitmapFromBytes(Byval offset As Integer,Byval length As Integer)
     Return DirectCast(System.ComponentModel.TypeDescriptor.GetConverter(GetType(Bitmap)).ConvertFrom(data), Bitmap)
 End Function
 
+Public Function ConvertToHex() As String
+    Return String.Join("", source.ToArray().Select(Function(by) by.ToString("X2")))
+End Function
+
+
+                                                
                                             
 
 #End Region
