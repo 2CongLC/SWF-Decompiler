@@ -16,42 +16,30 @@ Public Class ChromeUnPack
    data = New ByteArray()
    data.WriteBytes(source,3)
   End Sub
- 
 
-End Class
-  
-Using stream As FileStream = File.OpenRead(args(0))
-    Using br As BinaryReader = New BinaryReader(stream)
-        Dim version As UInteger = br.ReadUInt32()
-        Dim encoding As Byte = br.ReadByte()
-        stream.Seek(3, SeekOrigin.Current)
-        Dim resourceCount As UShort = br.ReadUInt16()
-        Dim aliasCount As UShort = br.ReadUInt16()
-
-        Dim entries As Entry() = New Entry(resourceCount + 1 - 1) {}
-        Dim aliases As Alias() = New Alias(aliasCount - 1) {}
-
-        Console.WriteLine(New With {.version = version, .encoding = encoding, .resourceCount = resourceCount, .aliasCount = aliasCount})
-
-        For i As Integer = 0 To resourceCount
-            Dim resourceId As UShort = br.ReadUInt16()
-            Dim fileOffset As UInteger = br.ReadUInt32()
-            entries(i) = New Entry(resourceId, fileOffset)
-            Console.WriteLine(New With {.resourceId = resourceId, .fileOffset = fileOffset})
+  Public sub UnPack(Byval outPut as String)
+    data.Position = 0
+    resourceCount = data.ReadUnsignedShort()
+    aliasCount = data.ReadUnsignedShort()
+    
+    Dim entries As EntryData() = New EntryData(resourceCount + 1 - 1) {}
+    Dim aliases As AliasData() = New AliasData(aliasCount - 1) {}
+    For i As Integer = 0 To resourceCount
+            Dim resourceId As UShort = data.ReadUnsignedShort()
+            Dim fileOffset As UInteger = data.ReadUnsignedInt()
+            entries(i) = New EntryData(resourceId, fileOffset)         
         Next
-
-        For i As Integer = 0 To aliasCount - 1
-            Dim resourceId As UShort = br.ReadUInt16()
-            Dim entryIndex As UShort = br.ReadUInt16()
-            aliases(i) = New Alias(resourceId, entryIndex)
-            Console.WriteLine(New With {.resourceId = resourceId, .entryIndex = entryIndex})
+  For i As Integer = 0 To aliasCount - 1
+            Dim resourceId As UShort = data.ReadUnsignedShort()
+            Dim entryIndex As UShort = data.ReadUnsignedShort()
+            aliases(i) = New AliasData(resourceId, entryIndex)       
         Next
-
-        Const outputDirectory As String = "resources"
+    
+Const outputDirectory As String = "resources"
         Directory.CreateDirectory(outputDirectory)
-
-        For i As Integer = 0 To resourceCount - 1
-            stream.Seek(entries(i).FileOffset, SeekOrigin.Begin)
+For i As Integer = 0 To resourceCount - 1
+            data.WriteUnsignedInt(entries(i).FileOffset)
+            
             Dim length As Integer = CInt(entries(i + 1).FileOffset - entries(i).FileOffset)
             Dim buff As Byte() = ArrayPool(Of Byte).Shared.Rent(length)
             Dim bytesRead As Integer = stream.Read(buff, 0, length)
@@ -61,11 +49,10 @@ Using stream As FileStream = File.OpenRead(args(0))
             ArrayPool(Of Byte).Shared.Return(buff)
         Next
 
-        Return 0
-    End Using
-End Using
 
-Public Structure Entry
+    End Sub
+  
+ Public Structure EntryData
     Public ReadOnly ResourceId As UShort
     Public ReadOnly FileOffset As UInteger
 
@@ -74,8 +61,8 @@ Public Structure Entry
         Me.FileOffset = fileOffset
     End Sub
 End Structure
-
-Public Structure Alias
+  
+  Public Structure AliasData
     Public ReadOnly ResourceId As UShort
     Public ReadOnly EntryIndex As UShort
 
@@ -84,5 +71,12 @@ Public Structure Alias
         Me.EntryIndex = entryIndex
     End Sub
 End Structure
+
+End Class
+  
+
+
+
+
 
 
