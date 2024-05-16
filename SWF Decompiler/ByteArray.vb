@@ -676,5 +676,37 @@ Public Function SHA512Hash() As String
                                             
                                             
 #End Region
-                          
+
+#Region "Serializator"
+
+   Public Function SerializeXml(Of T)() As String
+        Try
+            Dim value as String = Encoding.UTF8.GetString(source.ToArray())
+                                                    
+            Dim xmlSerializer = New Xml.Serialization.XmlSerializer(GetType(T))
+            Using stringWriter = New IO.StringWriter()
+                Using write = Xml.XmlWriter.Create(stringWriter, New Xml.XmlWriterSettings With {
+                .Indent = True
+            })
+                    xmlSerializer.Serialize(write, value)
+                    Return stringWriter.ToString()
+                End Using
+            End Using
+        Catch ex As Exception
+            Throw New Exception("An error occurred", ex)
+        End Try
+    End Function
+                                                
+     Public Function DeserializeXml(Of T)() As T
+        Try
+            Dim value as string = Encoding.UTF8.Getstring(source.ToArray())
+            Dim xmlSerializer = New Xml.Serialization.XmlSerializer(GetType(T))
+            Return CType(xmlSerializer.Deserialize(New IO.StringReader(value)), T)
+        Catch ex As Exception
+
+        End Try
+    End Function                                                
+
+#End Region
+                                            
 End Class
