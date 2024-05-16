@@ -435,7 +435,7 @@ End Function
         WriteBytesEndian(bytes)
     End Sub
                                     
-    Public Sub WriteUInt(value As UInteger)
+    Public Sub WriteReverseInt(value As UInteger)
         Dim bytes As Byte() = New Byte(3) {}
         bytes(3) = CByte(&HFF And value >> 24)
         bytes(2) = CByte(&HFF And value >> 16)
