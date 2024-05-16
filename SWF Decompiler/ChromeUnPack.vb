@@ -11,7 +11,7 @@ Public Class ChromeUnPack
   
   Public Sub New(Byval buffer as Byte())
    Dim source as ByteArray = New ByteArray(buffer)
-   _version = source.ReadUnsignedInt() 
+   _version = source.ReadUInt() 
    _enc = source.ReadByte()
    data = New ByteArray()
    data.WriteBytes(source,3)
@@ -19,19 +19,19 @@ Public Class ChromeUnPack
 
   Public sub UnPack(Byval outPut as String)
     data.Position = 0
-    resourceCount = data.ReadUnsignedShort()
-    aliasCount = data.ReadUnsignedShort()
+    resourceCount = data.ReadUShort()
+    aliasCount = data.ReadUShort()
     
     Dim entries As EntryData() = New EntryData(resourceCount + 1 - 1) {}
     Dim aliases As AliasData() = New AliasData(aliasCount - 1) {}
     For i As Integer = 0 To resourceCount
-            Dim resourceId As UShort = data.ReadUnsignedShort()
-            Dim fileOffset As UInteger = data.ReadUnsignedInt()
+            Dim resourceId As UShort = data.ReadUShort()
+            Dim fileOffset As UInteger = data.ReadUInt()
             entries(i) = New EntryData(resourceId, fileOffset)         
         Next
   For i As Integer = 0 To aliasCount - 1
-            Dim resourceId As UShort = data.ReadUnsignedShort()
-            Dim entryIndex As UShort = data.ReadUnsignedShort()
+            Dim resourceId As UShort = data.ReadUShort()
+            Dim entryIndex As UShort = data.ReadUShort()
             aliases(i) = New AliasData(resourceId, entryIndex)       
         Next
     
