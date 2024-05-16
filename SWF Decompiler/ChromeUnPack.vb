@@ -38,11 +38,9 @@ Public Class ChromeUnPack
 Const outputDirectory As String = outPut
         Directory.CreateDirectory(outputDirectory)
 For i As Integer = 0 To resourceCount - 1
-            data.WriteUnsignedInt(entries(i).FileOffset)
-            
-            Dim length As Integer = CInt(entries(i + 1).FileOffset - entries(i).FileOffset)
-            Dim buff As Byte() = ArrayPool(Of Byte).Shared.Rent(length)
-            Dim bytesRead As Integer = stream.Read(buff, 0, length)
+            data.WriteUnsignedInt(entries(i).FileOffset)        
+          Dim length As Integer = CInt(entries(i + 1).FileOffset - entries(i).FileOffset)
+            Dim buff As Byte() = ArrayPool(Of Byte).Shared.Rent(length)   
             Using file As FileStream = File.Create(Path.Combine(outputDirectory, $"f_{entries(i).ResourceId:X4}"))
                 file.Write(buff, 0, length)
             End Using
