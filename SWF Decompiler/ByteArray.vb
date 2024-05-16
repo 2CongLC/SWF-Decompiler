@@ -170,9 +170,6 @@ Public Class ByteArray
 
     End Sub
 
-
-
-
     Public Sub Uncompress(ByVal Optional algorithm As CompressionAlgorithm = CompressionAlgorithm.Zlib)
         Select Case algorithm
             Case CompressionAlgorithm.Deflate
@@ -323,6 +320,15 @@ Public Class ByteArray
         Return BitConverter.ToUInt32(bytes, 0)
     End Function
 
+     Public Function ReadLong() As Long
+        Dim bytes As Byte() = ReadBytesEndian(8)
+        Return BitConverter.ToLong(bytes, 0)
+    End Function
+                                            
+    Public Function ReadULong() As ULong
+        Dim bytes As Byte() = ReadBytesEndian(8)
+        Return BitConverter.ULong(bytes, 0)
+    End Function                                     
     Public Function ReadUTFBytes(length As Integer) As String
         If length = 0 Then
             Return String.Empty
