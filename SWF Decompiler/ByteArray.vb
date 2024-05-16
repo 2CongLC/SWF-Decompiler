@@ -280,8 +280,14 @@ Public Class ByteArray
     End Function
 
     Public Function ReadDouble() As Double
-        Dim bytes As Byte() = ReadBytesEndian(8)
-        Return BitConverter.ToDouble(bytes, 0)
+     Dim bytes As Byte() = ReadBytesEndian(8)
+     Dim reverse As Byte() = New Byte(7) {}
+
+    For i As Integer = 7 To 0 Step -1
+        reverse(7 - i) = bytes(i)
+    Next
+    Dim value As Double = BitConverter.ToDouble(reverse, 0)
+    Return value
     End Function
 
      Public Function ReadSByte() As SByte
@@ -295,7 +301,13 @@ Public Class ByteArray
                                             
     Public Function ReadSingle() As Single
         Dim bytes As Byte() = ReadBytesEndian(4)
-        Return BitConverter.ToSingle(bytes, 0)
+    Dim invertedBytes As Byte() = New Byte(3) {}
+    ' Grab the bytes in reverse order from the backwards index
+    For i As Integer = 3 To 0 Step -1
+        invertedBytes(3 - i) = bytes(i)
+    Next
+    Dim value As Single = BitConverter.ToSingle(invertedBytes, 0)
+    Return value
     End Function
    
     Public Function ReadShort() As Short
@@ -344,7 +356,7 @@ Public Class ByteArray
     End Function
 
 Public Function ReadReverseInt() As Integer
-    Dim bytes As Byte() = ReadBytes(4)
+    Dim bytes As Byte() = ReadBytesEndian(4)
     Dim val As Integer = 0
     val += bytes(3) << 24
     val += bytes(2) << 16
@@ -352,7 +364,13 @@ Public Function ReadReverseInt() As Integer
     val += bytes(0)
     Return val
 End Function
-                                        
+
+ Public Function ReadUInt24() As Integer
+    Dim bytes As Byte() = Me.ReadBytes(3)
+    Dim value As Integer = (bytes(0) << 16) Or (bytes(1) << 8) Or bytes(2)
+    Return value
+End Function
+                                    
 #End Region
 
 #Region "Ghi dữ liệu"
