@@ -301,7 +301,7 @@ Public Class ByteArray
         Return value
     End Function
 
-    Public Function ReadInt() As Integer
+    Public Function ReadInt32() As Integer
         Dim bytes As Byte() = ReadBytesEndian(4)
         Dim value As Integer = bytes(3) << 24 Or CInt(bytes(2)) << 16 Or CInt(bytes(1)) << 8 Or bytes(0)
         Return value
@@ -317,16 +317,16 @@ Public Class ByteArray
         Return bytes(1) << 8 Or bytes(0)
     End Function
 
-    Public Function ReadUnsignedByte() As Byte
+    Public Function ReadUByte() As Byte
         Return CByte(source.ReadByte)
     End Function
 
-    Public Function ReadUnsignedInt() As UInteger
+    Public Function ReadUInt() As UInteger
         Dim bytes As Byte() = ReadBytesEndian(4)
         Return BitConverter.ToUInt32(bytes, 0)
     End Function
 
-    Public Function ReadUnsignedShort() As UShort
+    Public Function ReadUShort() As UShort
         Dim bytes As Byte() = ReadBytesEndian(2)
         Return BitConverter.ToUInt16(bytes, 0)
     End Function
