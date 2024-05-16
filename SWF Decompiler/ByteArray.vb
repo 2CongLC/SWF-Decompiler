@@ -650,8 +650,26 @@ Private Function ConvertFromHex(Byval hexstring as string) As Byte()
 #Region "Lấy mã Hash"  
 
 Public Function MD5Hash() As String
-  Return BitConverter.ToString(MD5.Create().ComputeHash(inStream)).Replace("-", "").ToLower()
- End Function 
+  Return BitConverter.ToString(MD5.Create().ComputeHash(source)).Replace("-", "").ToLower()
+ End Function
+
+    Public Function SHA1Hash() As String
+        Return BitConverter.ToString(SHA1.Create().ComputeHash(source)).Replace("-", "").ToLower()
+    End Function
+ 
+  Public Function SHA256Hash() As String
+        Return BitConverter.ToString(SHA256.Create().ComputeHash(source)).Replace("-", "").ToLower()
+    End Function
+
+     Public Function SHA384Hash() As String
+        Return BitConverter.ToString(SHA384.Create().ComputeHash(source)).Replace("-", "").ToLower()
+    End Function
+
+
+
+
+
+                                            
                                             
 #End Region
                           
