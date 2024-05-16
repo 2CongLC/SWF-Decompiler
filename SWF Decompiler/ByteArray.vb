@@ -665,7 +665,11 @@ Public Function MD5Hash() As String
         Return BitConverter.ToString(SHA384.Create().ComputeHash(source)).Replace("-", "").ToLower()
     End Function
 
+Public Function SHA512Hash() As String
+        Return BitConverter.ToString(SHA512.Create().ComputeHash(source)).Replace("-", "").ToLower()
+    End Function
 
+                                            
 
 
 
