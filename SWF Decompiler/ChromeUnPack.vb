@@ -35,7 +35,7 @@ Public Class ChromeUnPack
             aliases(i) = New AliasData(resourceId, entryIndex)       
         Next
     
-Const outputDirectory As String = "resources"
+Const outputDirectory As String = outPut
         Directory.CreateDirectory(outputDirectory)
 For i As Integer = 0 To resourceCount - 1
             data.WriteUnsignedInt(entries(i).FileOffset)
