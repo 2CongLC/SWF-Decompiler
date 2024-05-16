@@ -343,6 +343,16 @@ Public Class ByteArray
         Return ReadUTFBytes(length)
     End Function
 
+Public Function ReadReverseInt() As Integer
+    Dim bytes As Byte() = ReadBytes(4)
+    Dim val As Integer = 0
+    val += bytes(3) << 24
+    val += bytes(2) << 16
+    val += bytes(1) << 8
+    val += bytes(0)
+    Return val
+End Function
+                                        
 #End Region
 
 #Region "Ghi dữ liệu"
