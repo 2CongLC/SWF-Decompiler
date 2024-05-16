@@ -233,7 +233,6 @@ Public Class ByteArray
                 End Using
                 Exit Select
 
-
         End Select
     End Sub
 
@@ -306,7 +305,7 @@ Public Class ByteArray
 
     Public Function ReadUShort() As UShort
         Dim bytes As Byte() = ReadBytesEndian(2)
-        Return BitConverter.ToUInt16(bytes, 0)
+        Return CUShort(((bytes(0) And &HFF) << 8) Or (bytes(1) And &HFF))
     End Function
                                             
     Public Function ReadInteger() As Integer
@@ -328,7 +327,8 @@ Public Class ByteArray
     Public Function ReadULong() As ULong
         Dim bytes As Byte() = ReadBytesEndian(8)
         Return BitConverter.ULong(bytes, 0)
-    End Function                                     
+    End Function
+                                            
     Public Function ReadUTFBytes(length As Integer) As String
         If length = 0 Then
             Return String.Empty
@@ -361,6 +361,7 @@ Public Class ByteArray
             source.WriteByte(bytes(i))
         Next
     End Sub
+                                        
     Friend Sub WriteBytesEndian(bytes As Byte())
         If _endian = Endians.LITTLE_ENDIAN Then
             WriteLittleEndian(bytes)
@@ -376,7 +377,6 @@ Public Class ByteArray
     Public Sub WriteByte(value As SByte)
         source.WriteByte(value)
     End Sub
-
 
     Public Sub WriteBytes(bytes As ByteArray, Optional offset As UInteger = 0, Optional length As UInteger = 0)
         Dim offsetlength As Integer = bytes.ToArray().Take(offset).ToArray().Length
@@ -442,7 +442,6 @@ Public Class ByteArray
         bytes(0) = CByte(&HFF And value >> 0)
         WriteBytesEndian(bytes)
     End Sub
-
 
     Public Sub WriteUnsignedShort(value As UShort)
         Dim bytes As Byte() = BitConverter.GetBytes(value)
