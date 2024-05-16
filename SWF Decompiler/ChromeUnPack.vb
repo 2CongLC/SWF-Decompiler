@@ -3,18 +3,20 @@ Imports System.Buffers
 
 Public Class ChromeUnPack
 
- 
+  Private data as ByteArray
   Private _version as UInteger
   Private _enc as Byte
   Private resourceCount as UShort
   Private aliasCount as UShort
   
   Public Sub New(Byval buffer as Byte())
-    Dim source as ByteArray = New ByteArray(buffer)
-    _version = source.ReadUInteger32()
-    
-
+   Dim source as ByteArray = New ByteArray(buffer)
+   _version = source.ReadUnsignedInt() 
+   _enc = source.ReadByte()
+   data = New ByteArray()
+   data.WriteBytes(source,3)
   End Sub
+ 
 
 End Class
   
