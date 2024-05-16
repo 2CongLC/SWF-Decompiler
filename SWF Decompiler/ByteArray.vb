@@ -268,20 +268,16 @@ Public Class ByteArray
         End If
     End Function
 
-    Public Function ReadSByte() As SByte
-        Dim buffer As SByte = CSByte(source.ReadByte)
-        Return buffer
-    End Function
-                                            
-    Public Function ReadByte() As Byte
-        Return source.ReadByte
-    End Function
-
     Public Sub ReadBytes(bytes As ByteArray, offset As UInteger, length As UInteger)
         Dim content As Byte() = New Byte(length - 1) {}
         source.Read(content, offset, length)
         bytes.WriteBytes(New ByteArray(content), 0, content.Length)
     End Sub
+                                            
+    Public Function ReadMultiByte(length As UInteger, charset As String) As String
+        Dim bytes As Byte() = ReadBytesEndian(CInt(length))
+        Return Encoding.GetEncoding(charset).GetString(bytes)
+    End Function 
                                             
     Public Function ReadBoolean() As Boolean
         Return source.ReadByte = 1
@@ -292,18 +288,20 @@ Public Class ByteArray
         Return BitConverter.ToDouble(bytes, 0)
     End Function
 
+     Public Function ReadSByte() As SByte
+        Dim buffer As SByte = CSByte(source.ReadByte)
+        Return buffer
+    End Function
+                                            
+    Public Function ReadByte() As Byte
+        Return source.ReadByte
+    End Function
+                                            
     Public Function ReadSingle() As Single
         Dim bytes As Byte() = ReadBytesEndian(4)
         Return BitConverter.ToSingle(bytes, 0)
     End Function
-
-    
-
-    Public Function ReadMultiByte(length As UInteger, charset As String) As String
-        Dim bytes As Byte() = ReadBytesEndian(CInt(length))
-        Return Encoding.GetEncoding(charset).GetString(bytes)
-    End Function
-
+   
     Public Function ReadShort() As Short
         Dim bytes As Byte() = ReadBytesEndian(2)
         Return bytes(1) << 8 Or bytes(0)
@@ -314,13 +312,13 @@ Public Class ByteArray
         Return BitConverter.ToUInt16(bytes, 0)
     End Function
                                             
-    Public Function ReadInt32() As Integer
+    Public Function ReadInteger() As Integer
         Dim bytes As Byte() = ReadBytesEndian(4)
         Dim value As Integer = bytes(3) << 24 Or CInt(bytes(2)) << 16 Or CInt(bytes(1)) << 8 Or bytes(0)
         Return value
     End Function
                                             
-    Public Function ReadUInt32() As UInteger
+    Public Function ReadUInteger() As UInteger
         Dim bytes As Byte() = ReadBytesEndian(4)
         Return BitConverter.ToUInt32(bytes, 0)
     End Function
