@@ -39,8 +39,14 @@ Const outputDirectory As String = outPut
 Directory.CreateDirectory(outputDirectory)
 For i As Integer = 0 To resourceCount - 1
     Dim outData as ByteArray = New ByteArray()
-    outData.WrireBytes(data,entries(i).FileOffset)       
-    IO.File.WriteAllBytes(outputDirectory,outData.ToArray())
+    outData.WrireBytes(data,entries(i).FileOffset) 
+    Dim length As Integer = CInt(entries(i + 1).FileOffset - entries(i).FileOffset)
+
+Dim files As IO.FileStream = IO.File.Create(IO.Path.Combine(outputDirectory, $"f_{String.Format("{0:x4}", entries(i).ResourceId)}"))
+Using files
+    file.Write(outData.ToArray(), 0, length)
+End Using
+    
 Next
 End Sub
   
