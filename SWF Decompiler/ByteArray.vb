@@ -297,11 +297,7 @@ Public Class ByteArray
         Return BitConverter.ToSingle(bytes, 0)
     End Function
 
-    Public Function ReadInt32() As Integer
-        Dim bytes As Byte() = ReadBytesEndian(4)
-        Dim value As Integer = bytes(3) << 24 Or CInt(bytes(2)) << 16 Or CInt(bytes(1)) << 8 Or bytes(0)
-        Return value
-    End Function
+    
 
     Public Function ReadMultiByte(length As UInteger, charset As String) As String
         Dim bytes As Byte() = ReadBytesEndian(CInt(length))
@@ -318,12 +314,16 @@ Public Class ByteArray
         Return BitConverter.ToUInt16(bytes, 0)
     End Function
                                             
-    Public Function ReadUInt() As UInteger
+    Public Function ReadInt32() As Integer
+        Dim bytes As Byte() = ReadBytesEndian(4)
+        Dim value As Integer = bytes(3) << 24 Or CInt(bytes(2)) << 16 Or CInt(bytes(1)) << 8 Or bytes(0)
+        Return value
+    End Function
+                                            
+    Public Function ReadUInt32() As UInteger
         Dim bytes As Byte() = ReadBytesEndian(4)
         Return BitConverter.ToUInt32(bytes, 0)
     End Function
-
-    
 
     Public Function ReadUTFBytes(length As Integer) As String
         If length = 0 Then
