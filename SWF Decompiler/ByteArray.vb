@@ -272,6 +272,7 @@ Public Class ByteArray
         Dim buffer As SByte = CSByte(source.ReadByte)
         Return buffer
     End Function
+                                            
     Public Function ReadByte() As Byte
         Return source.ReadByte
     End Function
@@ -281,6 +282,7 @@ Public Class ByteArray
         source.Read(content, offset, length)
         bytes.WriteBytes(New ByteArray(content), 0, content.Length)
     End Sub
+                                            
     Public Function ReadBoolean() As Boolean
         Return source.ReadByte = 1
     End Function
@@ -290,15 +292,9 @@ Public Class ByteArray
         Return BitConverter.ToDouble(bytes, 0)
     End Function
 
-    Public Function ReadFloat() As Single
+    Public Function ReadSingle() As Single
         Dim bytes As Byte() = ReadBytesEndian(4)
         Return BitConverter.ToSingle(bytes, 0)
-    End Function
-
-    Public Function ReadUInt24() As Integer
-        Dim bytes As Byte() = ReadBytesEndian(3)
-        Dim value As Integer = (bytes(0) << 16) Or (bytes(1) << 8) Or bytes(2)
-        Return value
     End Function
 
     Public Function ReadInt32() As Integer
@@ -317,19 +313,17 @@ Public Class ByteArray
         Return bytes(1) << 8 Or bytes(0)
     End Function
 
-    Public Function ReadUByte() As Byte
-        Return CByte(source.ReadByte)
+    Public Function ReadUShort() As UShort
+        Dim bytes As Byte() = ReadBytesEndian(2)
+        Return BitConverter.ToUInt16(bytes, 0)
     End Function
-
+                                            
     Public Function ReadUInt() As UInteger
         Dim bytes As Byte() = ReadBytesEndian(4)
         Return BitConverter.ToUInt32(bytes, 0)
     End Function
 
-    Public Function ReadUShort() As UShort
-        Dim bytes As Byte() = ReadBytesEndian(2)
-        Return BitConverter.ToUInt16(bytes, 0)
-    End Function
+    
 
     Public Function ReadUTFBytes(length As Integer) As String
         If length = 0 Then
