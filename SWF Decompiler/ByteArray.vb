@@ -705,7 +705,29 @@ Public Function SHA512Hash() As String
         Catch ex As Exception
 
         End Try
-    End Function                                                
+    End Function 
+
+    <Obsolete>
+    Public Function BinarySerialize(Of T) As String
+
+        Dim _outms As MemoryStream = New MemoryStream()
+        Dim binaryFormatter As New BinaryFormatter()    
+        binaryFormatter.Serialize(_outms, T)
+        Return Encoding.UTF8.GetString(ms.ToArray())
+
+    End Function
+
+    <Obsolete>
+    Public Function BinaryDeSerialize(Of T)() As t
+                                                    
+        Dim bf As New BinaryFormatter()
+        Dim obj As t = Nothing 
+        obj = DirectCast(bf.Deserialize(source, t)
+        Return obj     
+                                                        
+    End Function
+
+                                              
 
 #End Region
                                             
