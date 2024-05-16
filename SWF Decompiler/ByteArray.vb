@@ -631,7 +631,7 @@ Public Function ConvertToHex() As String
     Return String.Join("", source.ToArray().Select(Function(by) by.ToString("X2")))
 End Function
 
-Private  Function ConvertFromHex(Byval hexstring as string) As Byte()
+Private Function ConvertFromHex(Byval hexstring as string) As Byte()
     
     Dim NumberChars As Integer = hexstring.Length
     Dim bytes As Byte() = New Byte(NumberChars \ 2 - 1) {}
@@ -639,12 +639,20 @@ Private  Function ConvertFromHex(Byval hexstring as string) As Byte()
         bytes(i \ 2) = Convert.ToByte(hexstring.Substring(i, 2), 16)
     Next
     Return bytes
- End Function                                                       
+ End Function  
+                                            
 
                                                 
                                             
 
 #End Region
+                                            
+#Region "Lấy mã Hash"  
 
+Public Function MD5Hash() As String
+  Return BitConverter.ToString(MD5.Create().ComputeHash(inStream)).Replace("-", "").ToLower()
+ End Function 
+                                            
+#End Region
                           
 End Class
