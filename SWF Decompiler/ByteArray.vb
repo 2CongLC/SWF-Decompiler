@@ -381,6 +381,7 @@ End Function
         End If
         source.Write(bytes, 0, bytes.Length)
     End Sub
+                                    
     Private Sub WriteBigEndian(bytes As Byte())
         If bytes Is Nothing Then
             Return
@@ -402,9 +403,13 @@ End Function
         source.WriteByte(If(value, CByte(1), CByte(0)))
     End Sub
 
-    Public Sub WriteByte(value As SByte)
+    Public Sub WriteSByte(value As SByte)
         source.WriteByte(value)
     End Sub
+
+    Public Sub WriteUByte(value As Byte)
+        source.WriteByte(value)
+    End Sub                               
 
     Public Sub WriteBytes(bytes As ByteArray, Optional offset As UInteger = 0, Optional length As UInteger = 0)
         Dim offsetlength As Integer = bytes.ToArray().Take(offset).ToArray().Length
@@ -429,6 +434,15 @@ End Function
         Dim bytes As Byte() = BitConverter.GetBytes(value)
         WriteBytesEndian(bytes)
     End Sub
+                                    
+    Public Sub WriteUInt(value As UInteger)
+        Dim bytes As Byte() = New Byte(3) {}
+        bytes(3) = CByte(&HFF And value >> 24)
+        bytes(2) = CByte(&HFF And value >> 16)
+        bytes(1) = CByte(&HFF And value >> 8)
+        bytes(0) = CByte(&HFF And value >> 0)
+        WriteBytesEndian(bytes)
+    End Sub                            
 
     Public Sub WriteMultiByte(value As String, charset As String)
         Dim bytes As Byte() = Encoding.GetEncoding(charset).GetBytes(value)
@@ -439,6 +453,11 @@ End Function
         Dim bytes As Byte() = BitConverter.GetBytes(value)
         WriteBytesEndian(bytes)
     End Sub
+
+   Public Sub WriteUShort(value As UShort)
+        Dim bytes As Byte() = BitConverter.GetBytes(value)
+        WriteBigEndian(bytes)
+    End Sub                             
 
     Public Sub WriteUTF(value As String)
         Dim utf8 As UTF8Encoding = New UTF8Encoding()
@@ -458,23 +477,33 @@ End Function
         End If
     End Sub
 
-    Public Sub WriteUnsignedByte(value As Byte)
-        source.WriteByte(value)
+    Public Sub WriteLong(Byval value As Long)
+      Dim bytes As Byte() = BitConverter.GetBytes(value)
+      WriteBigEndian(bytes)
     End Sub
 
-    Public Sub WriteUnsignedInt(value As UInteger)
-        Dim bytes As Byte() = New Byte(3) {}
-        bytes(3) = CByte(&HFF And value >> 24)
-        bytes(2) = CByte(&HFF And value >> 16)
-        bytes(1) = CByte(&HFF And value >> 8)
-        bytes(0) = CByte(&HFF And value >> 0)
-        WriteBytesEndian(bytes)
-    End Sub
+ Public Sub WriteUInt24(value As Integer)
+    Dim bytes As Byte() = New Byte(2) {}
+    bytes(0) = CByte(&HFF And (value >> 16))
+    bytes(1) = CByte(&HFF And (value >> 8))
+    bytes(2) = CByte(&HFF And value)
+    WriteBigEndian(bytes)
+End Sub                              
 
-    Public Sub WriteUnsignedShort(value As UShort)
-        Dim bytes As Byte() = BitConverter.GetBytes(value)
-        WriteBigEndian(bytes)
-    End Sub
+Public Sub WriteXDocument(Byval value As XDocument)
+    If value IsNot Nothing Then
+        Dim xmlstring As String = value.ToString()
+        WriteLongUTF(xmlstring)
+    End If
+End Sub
+
+Public Sub WriteXElement(Byval value As XElement)
+    If value IsNot Nothing Then
+        Dim xml As String = value.ToString()
+        Me.WriteLongUTF(xml)
+    End If
+End Sub                                  
+    
 
 #End Region
 
