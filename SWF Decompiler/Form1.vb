@@ -11,10 +11,8 @@
 
                 source.Compress(SaveFileDialog1.FileName, SWF.CompressTionTypes.CWS)
 
-
                 MessageBox.Show("ok")
             End If
-
 
         Catch ex As Exception
             MessageBox.Show(ex.ToString())
@@ -26,17 +24,14 @@
             OpenFileDialog1.Filter = "All Files(*.swf)|*.swf"
             SaveFileDialog1.Filter = "All Files(*.swf)|*.swf"
 
-
             If OpenFileDialog1.ShowDialog = DialogResult.OK AndAlso SaveFileDialog1.ShowDialog = DialogResult.OK Then
 
                 Dim source As SWF = New SWF(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
 
                 source.Compress(SaveFileDialog1.FileName, SWF.CompressTionTypes.ZWS)
 
-
                 MessageBox.Show("ok")
             End If
-
 
         Catch ex As Exception
             MessageBox.Show(ex.ToString())
@@ -55,10 +50,8 @@
 
                 source.DeCompress(SaveFileDialog1.FileName)
 
-
                 MessageBox.Show("ok")
             End If
-
 
         Catch ex As Exception
             MessageBox.Show(ex.ToString())

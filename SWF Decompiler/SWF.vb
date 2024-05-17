@@ -15,7 +15,7 @@ Public Class SWF
 
     Private _fileSize As Byte()
 
-    Private _framesize As Byte()
+    Private _framesize As ByteArray
 
     Private _framerate As Byte()
 
@@ -56,7 +56,7 @@ Public Class SWF
 
             frsize.WriteBytes(source, 8, 9)
 
-            _framesize = frsize.ToArray()
+            _framesize = frsize
 
             Dim frrate As ByteArray = New ByteArray()
 
@@ -112,7 +112,7 @@ Public ReadOnly Property Heigth as integer
 End Property
 
     Public Sub FrameSize()
-        Dim b As Integer = GetNextByte(_framesize)
+        Dim b As Integer = _framesize.GetNextByte()
         Dim nb As Integer = b >> 3
         b = b And 7
         b <<= 5
@@ -131,7 +131,7 @@ End Property
                 bitcount += 1
 
                 If cb < 0 Then
-                    b = GetNextByte(_framesize)
+                    b = _framesize.GetNextByte()
                     cb = 7
                 End If
             End While
@@ -147,9 +147,6 @@ End Property
                 Case 3
                     mHeigth = value - mHeigth
             End Select
-
-
-
         Next
     End Sub
 
@@ -216,7 +213,7 @@ End Property
         Dim buffer As ByteArray = New ByteArray()
         buffer.WriteMultiByte("ZWS", "us-ascii")
         buffer.WriteByte(Version)
-        buffer.WriteBytes(Filesize)
+        buffer.WriteByte(Filesize)
         buffer.WriteByte(compressedLen)
         buffer.WriteBytes(lzmaprops)
         buffer.WriteBytes(lzmadata)

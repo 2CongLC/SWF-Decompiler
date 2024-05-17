@@ -8,6 +8,8 @@ Imports SevenZip
 Imports System.Xml
 Imports System.Runtime.InteropServices
 Imports Lzma
+Imports System.Runtime.Serialization.Formatters.Binary
+Imports System.Security.Cryptography
 
 Public Enum Endians
     BIG_ENDIAN = 0
@@ -98,14 +100,14 @@ Public Class ByteArray
     Public Function ToArray() As Byte()
         Return source.ToArray()
     End Function
-    
+
     Public Function GetBuffer() As Byte()
         Return source.GetBuffer()
     End Function
 
-    Public Function GetNextByte(Option index as integer =0) as Byte
-        Dim result as byte = source.ToArray()(index)
-        index +=1
+    Public Function GetNextByte(Optional index As Integer = 0) As Byte
+        Dim result As Byte = source.ToArray()(index)
+        index += 1
         Return result
     End Function
 
@@ -269,47 +271,47 @@ Public Class ByteArray
         source.Read(content, offset, length)
         bytes.WriteBytes(New ByteArray(content), 0, content.Length)
     End Sub
-                                            
+
     Public Function ReadMultiByte(length As UInteger, charset As String) As String
         Dim bytes As Byte() = ReadBytesEndian(CInt(length))
         Return Encoding.GetEncoding(charset).GetString(bytes)
-    End Function 
-                                            
+    End Function
+
     Public Function ReadBoolean() As Boolean
         Return source.ReadByte = 1
     End Function
 
     Public Function ReadDouble() As Double
-     Dim bytes As Byte() = ReadBytesEndian(8)
-     Dim reverse As Byte() = New Byte(7) {}
+        Dim bytes As Byte() = ReadBytesEndian(8)
+        Dim reverse As Byte() = New Byte(7) {}
 
-    For i As Integer = 7 To 0 Step -1
-        reverse(7 - i) = bytes(i)
-    Next
-    Dim value As Double = BitConverter.ToDouble(reverse, 0)
-    Return value
+        For i As Integer = 7 To 0 Step -1
+            reverse(7 - i) = bytes(i)
+        Next
+        Dim value As Double = BitConverter.ToDouble(reverse, 0)
+        Return value
     End Function
 
-     Public Function ReadSByte() As SByte
+    Public Function ReadSByte() As SByte
         Dim buffer As SByte = CSByte(source.ReadByte)
         Return buffer
     End Function
-                                            
+
     Public Function ReadByte() As Byte
         Return source.ReadByte
     End Function
-                                            
+
     Public Function ReadSingle() As Single
         Dim bytes As Byte() = ReadBytesEndian(4)
-    Dim invertedBytes As Byte() = New Byte(3) {}
-    ' Grab the bytes in reverse order from the backwards index
-    For i As Integer = 3 To 0 Step -1
-        invertedBytes(3 - i) = bytes(i)
-    Next
-    Dim value As Single = BitConverter.ToSingle(invertedBytes, 0)
-    Return value
+        Dim invertedBytes As Byte() = New Byte(3) {}
+        ' Grab the bytes in reverse order from the backwards index
+        For i As Integer = 3 To 0 Step -1
+            invertedBytes(3 - i) = bytes(i)
+        Next
+        Dim value As Single = BitConverter.ToSingle(invertedBytes, 0)
+        Return value
     End Function
-   
+
     Public Function ReadShort() As Short
         Dim bytes As Byte() = ReadBytesEndian(2)
         Return bytes(1) << 8 Or bytes(0)
@@ -319,28 +321,28 @@ Public Class ByteArray
         Dim bytes As Byte() = ReadBytesEndian(2)
         Return CUShort(((bytes(0) And &HFF) << 8) Or (bytes(1) And &HFF))
     End Function
-                                            
+
     Public Function ReadInteger() As Integer
         Dim bytes As Byte() = ReadBytesEndian(4)
         Dim value As Integer = bytes(3) << 24 Or CInt(bytes(2)) << 16 Or CInt(bytes(1)) << 8 Or bytes(0)
         Return value
     End Function
-                                            
+
     Public Function ReadUInteger() As UInteger
         Dim bytes As Byte() = ReadBytesEndian(4)
         Return BitConverter.ToUInt32(bytes, 0)
     End Function
 
-     Public Function ReadLong() As Long
+    Public Function ReadLong() As Long
         Dim bytes As Byte() = ReadBytesEndian(8)
-        Return BitConverter.ToLong(bytes, 0)
+        Return BitConverter.ToInt64(bytes, 0)
     End Function
-                                            
+
     Public Function ReadULong() As ULong
         Dim bytes As Byte() = ReadBytesEndian(8)
-        Return BitConverter.ULong(bytes, 0)
+        Return BitConverter.ToUInt64(bytes, 0)
     End Function
-                                            
+
     Public Function ReadUTFBytes(length As Integer) As String
         If length = 0 Then
             Return String.Empty
@@ -355,22 +357,13 @@ Public Class ByteArray
         Return ReadUTFBytes(length)
     End Function
 
-Public Function ReadReverseInt() As Integer
-    Dim bytes As Byte() = ReadBytesEndian(4)
-    Dim val As Integer = 0
-    val += bytes(3) << 24
-    val += bytes(2) << 16
-    val += bytes(1) << 8
-    val += bytes(0)
-    Return val
-End Function
 
- Public Function ReadUInt24() As Integer
-    Dim bytes As Byte() = Me.ReadBytes(3)
-    Dim value As Integer = (bytes(0) << 16) Or (bytes(1) << 8) Or bytes(2)
-    Return value
-End Function
-                                    
+    Public Function ReadUInt24() As Integer
+        Dim bytes As Byte() = ReadBytesEndian(3)
+        Dim value As Integer = (bytes(0) << 16) Or (bytes(1) << 8) Or bytes(2)
+        Return value
+    End Function
+
 #End Region
 
 #Region "Ghi dữ liệu"
@@ -381,7 +374,7 @@ End Function
         End If
         source.Write(bytes, 0, bytes.Length)
     End Sub
-                                    
+
     Private Sub WriteBigEndian(bytes As Byte())
         If bytes Is Nothing Then
             Return
@@ -390,7 +383,7 @@ End Function
             source.WriteByte(bytes(i))
         Next
     End Sub
-                                        
+
     Friend Sub WriteBytesEndian(bytes As Byte())
         If _endian = Endians.LITTLE_ENDIAN Then
             WriteLittleEndian(bytes)
@@ -403,13 +396,9 @@ End Function
         source.WriteByte(If(value, CByte(1), CByte(0)))
     End Sub
 
-    Public Sub WriteSByte(value As SByte)
+    Public Sub WriteByte(value As Byte)
         source.WriteByte(value)
     End Sub
-
-    Public Sub WriteUByte(value As Byte)
-        source.WriteByte(value)
-    End Sub                               
 
     Public Sub WriteBytes(bytes As ByteArray, Optional offset As UInteger = 0, Optional length As UInteger = 0)
         Dim offsetlength As Integer = bytes.ToArray().Take(offset).ToArray().Length
@@ -434,7 +423,7 @@ End Function
         Dim bytes As Byte() = BitConverter.GetBytes(value)
         WriteBytesEndian(bytes)
     End Sub
-                                    
+
     Public Sub WriteReverseInt(value As UInteger)
         Dim bytes As Byte() = New Byte(3) {}
         bytes(3) = CByte(&HFF And value >> 24)
@@ -442,7 +431,7 @@ End Function
         bytes(1) = CByte(&HFF And value >> 8)
         bytes(0) = CByte(&HFF And value >> 0)
         WriteBytesEndian(bytes)
-    End Sub                            
+    End Sub
 
     Public Sub WriteMultiByte(value As String, charset As String)
         Dim bytes As Byte() = Encoding.GetEncoding(charset).GetBytes(value)
@@ -454,10 +443,10 @@ End Function
         WriteBytesEndian(bytes)
     End Sub
 
-   Public Sub WriteUShort(value As UShort)
+    Public Sub WriteUShort(value As UShort)
         Dim bytes As Byte() = BitConverter.GetBytes(value)
         WriteBigEndian(bytes)
-    End Sub                             
+    End Sub
 
     Public Sub WriteUTF(value As String)
         Dim utf8 As UTF8Encoding = New UTF8Encoding()
@@ -477,212 +466,187 @@ End Function
         End If
     End Sub
 
-    Public Sub WriteLong(Byval value As Long)
-      Dim bytes As Byte() = BitConverter.GetBytes(value)
-      WriteBigEndian(bytes)
+    Public Sub WriteLong(ByVal value As Long)
+        Dim bytes As Byte() = BitConverter.GetBytes(value)
+        WriteBigEndian(bytes)
     End Sub
 
- Public Sub WriteUInt24(value As Integer)
-    Dim bytes As Byte() = New Byte(2) {}
-    bytes(0) = CByte(&HFF And (value >> 16))
-    bytes(1) = CByte(&HFF And (value >> 8))
-    bytes(2) = CByte(&HFF And value)
-    WriteBigEndian(bytes)
-End Sub                              
+    Public Sub WriteUInt24(value As Integer)
+        Dim bytes As Byte() = New Byte(2) {}
+        bytes(0) = CByte(&HFF And (value >> 16))
+        bytes(1) = CByte(&HFF And (value >> 8))
+        bytes(2) = CByte(&HFF And value)
+        WriteBigEndian(bytes)
+    End Sub
 
-Public Sub WriteXDocument(Byval value As XDocument)
-    If value IsNot Nothing Then
-        Dim xmlstring As String = value.ToString()
-        WriteLongUTF(xmlstring)
-    End If
-End Sub
 
-Public Sub WriteXElement(Byval value As XElement)
-    If value IsNot Nothing Then
-        Dim xml As String = value.ToString()
-        Me.WriteLongUTF(xml)
-    End If
-End Sub                                  
-    
 
 #End Region
 
 #Region "Kiểm tra định dạng"
 
-    Public Function TryGetXml(<out> ByRef output As XDocument) As Boolean
-        
+    Public Function TryGetXml(<Out> ByRef output As XDocument) As Boolean
+
         Try
 
             source.Position = 0
             Dim options As LoadOptions = LoadOptions.None
             output = XDocument.Load(source, options)
-            Dim root as XElement = output.root
-            If Root.IsEmpty = False Then
+            Dim root As XElement = output.Root
+            If root.IsEmpty = False Then
                 Return True
             Else
                 Return False
             End If
 
-        Catch ex as Exception     
+        Catch ex As Exception
             Return False
         End Try
     End Function
 
-    Public Function TryGetJson(<out>ByRef output As JsonDocument) As Boolean
-      
-        Try  
-             source.Position = 0
-             Dim options as JsonDocumentOptions =  New JsonDocumentOptions() With {
-               .CommentHandling = JsonCommentHandling.Skip }
+    Public Function TryGetJson(<Out> ByRef output As JsonDocument) As Boolean
+
+        Try
+            source.Position = 0
+            Dim options As JsonDocumentOptions = New JsonDocumentOptions() With {
+              .CommentHandling = JsonCommentHandling.Skip}
             output = JsonDocument.Parse(source, options)
             Dim root As JsonElement = output.RootElement
             If root.ValueKind = JsonValueKind.Object Then
                 Return True
             Else
                 Return False
-            End if                                           
-             
-        Catch ex as Exception
-             Return False
-         End Try 
-                                            
+            End If
+
+        Catch ex As Exception
+            Return False
+        End Try
+
     End Function
-                                                
-    Public Function TryGetHex(<out>Byref data as Byte()) as Boolean
-      Try
-          Dim hexstring as String = Encoding.Default.Getstring(source.ToArray())
-          If hexstring.All(char.IsAsciiHexDigit) = True Then
-             data = ConvertFromHex(hexstring)
-              Return True
-           Else
-              Return False
-           End if
-         Catch Ex as Exception
-                Return False
-         End Try 
-       End Function                                             
-                                                    
+
+
 #End Region
 
 #Region "Mã hóa dữ liệu"
 
-Public Sub MochiDecrypt() 
-    
-    Dim data as ByteArray = New ByteArray()
-    data.WriteBytes(source,8)
-    Dim payload as Byte() = data.ToArray()
-    
-    Dim S As New List(Of Byte)
-    Dim i As Integer = 0
-    Dim j As Integer = 0
-    Dim k As Integer = 0
-    Dim n As Integer = 0
-    Dim u As Integer = 0
-    Dim v As Integer = 0
+    Public Sub MochiDecrypt()
 
-    n = payload.Length - 32
-    While i < 256
-        S.Add(CByte(i))
-        i += 1
-    End While
-    j = 0
-    i = 0
-    While i < 256
-        j = (j + S(i) + payload(n + (i And 31))) And 255
-        u = S(i)
-        S(i) = S(j)
-        S(j) = CByte(u)
-        i += 1
-    End While
-    If n > 131072 Then
-        n = 131072
-    End If
-    j = 0
-    i = 0
-    k = 0
-    While k < n
-        i = (i + 1) And 255
-        u = S(i)
-        j = (j + u) And 255
-        v = S(j)
-        S(i) = CByte(v)
-        S(j) = CByte(u)
-        payload(k) = CByte(payload(k) Xor S((u + v) And 255))
-        k += 1
-    End While
-    Dim ms as MemoryStream = New MemoryStream(payload)
-    source = ms                                               
-    source.position = 0 
-    ms.close()                                               
-End Sub
+        Dim bytes As ByteArray = New ByteArray()
+        Dim data As ByteArray = New ByteArray()
+        data.WriteBytes(bytes, 8)
+        Dim payload As Byte() = data.ToArray()
 
-                                                
+        Dim S As New List(Of Byte)
+        Dim i As Integer = 0
+        Dim j As Integer = 0
+        Dim k As Integer = 0
+        Dim n As Integer = 0
+        Dim u As Integer = 0
+        Dim v As Integer = 0
+
+        n = payload.Length - 32
+        While i < 256
+            S.Add(CByte(i))
+            i += 1
+        End While
+        j = 0
+        i = 0
+        While i < 256
+            j = (j + S(i) + payload(n + (i And 31))) And 255
+            u = S(i)
+            S(i) = S(j)
+            S(j) = CByte(u)
+            i += 1
+        End While
+        If n > 131072 Then
+            n = 131072
+        End If
+        j = 0
+        i = 0
+        k = 0
+        While k < n
+            i = (i + 1) And 255
+            u = S(i)
+            j = (j + u) And 255
+            v = S(j)
+            S(i) = CByte(v)
+            S(j) = CByte(u)
+            payload(k) = CByte(payload(k) Xor S((u + v) And 255))
+            k += 1
+        End While
+        Dim ms As MemoryStream = New MemoryStream(payload)
+        source = ms
+        source.Position = 0
+        ms.Close()
+    End Sub
+
+
 #End Region
 
 #Region " Trích xuất dữ liệu "
-    
-Public Function BitmapFromBytes(Byval offset As Integer,Byval length As Integer) As Bitmap
-    Dim data As Byte() = New Byte(length - 1) {}
-    Array.Copy(source.ToArray(), offset, data, 0, length)
-    Return DirectCast(System.ComponentModel.TypeDescriptor.GetConverter(GetType(Bitmap)).ConvertFrom(data), Bitmap)
-End Function
 
-Public Function ConvertToHex() As String
-    Return String.Join("", source.ToArray().Select(Function(by) by.ToString("X2")))
-End Function
+    Public Function BitmapFromBytes(ByVal offset As Integer, ByVal length As Integer) As Bitmap
+        Dim data As Byte() = New Byte(length - 1) {}
+        Array.Copy(source.ToArray(), offset, data, 0, length)
+        Return DirectCast(System.ComponentModel.TypeDescriptor.GetConverter(GetType(Bitmap)).ConvertFrom(data), Bitmap)
+    End Function
 
-Private Function ConvertFromHex(Byval hexstring as string) As Byte()
-    
-    Dim NumberChars As Integer = hexstring.Length
-    Dim bytes As Byte() = New Byte(NumberChars \ 2 - 1) {}
-    For i As Integer = 0 To NumberChars - 1 Step 2
-        bytes(i \ 2) = Convert.ToByte(hexstring.Substring(i, 2), 16)
-    Next
-    Return bytes
- End Function  
-                                            
+    Public Function ConvertToHex() As String
+        Return String.Join("", source.ToArray().Select(Function(by) by.ToString("X2")))
+    End Function
 
-                                                
-                                            
+    Private Function ConvertFromHex(ByVal hexstring As String) As Byte()
+
+        Dim NumberChars As Integer = hexstring.Length
+        Dim bytes As Byte() = New Byte(NumberChars \ 2 - 1) {}
+        For i As Integer = 0 To NumberChars - 1 Step 2
+            bytes(i \ 2) = Convert.ToByte(hexstring.Substring(i, 2), 16)
+        Next
+        Return bytes
+    End Function
+
+
+
+
 
 #End Region
-                                            
-#Region "Lấy mã Hash"  
 
-Public Function MD5Hash() As String
-  Return BitConverter.ToString(MD5.Create().ComputeHash(source)).Replace("-", "").ToLower()
- End Function
+#Region "Lấy mã Hash"
+
+    Public Function MD5Hash() As String
+        Return BitConverter.ToString(MD5.Create().ComputeHash(source)).Replace("-", "").ToLower()
+    End Function
 
     Public Function SHA1Hash() As String
         Return BitConverter.ToString(SHA1.Create().ComputeHash(source)).Replace("-", "").ToLower()
     End Function
- 
-  Public Function SHA256Hash() As String
+
+    Public Function SHA256Hash() As String
         Return BitConverter.ToString(SHA256.Create().ComputeHash(source)).Replace("-", "").ToLower()
     End Function
 
-     Public Function SHA384Hash() As String
+    Public Function SHA384Hash() As String
         Return BitConverter.ToString(SHA384.Create().ComputeHash(source)).Replace("-", "").ToLower()
     End Function
 
-Public Function SHA512Hash() As String
+    Public Function SHA512Hash() As String
         Return BitConverter.ToString(SHA512.Create().ComputeHash(source)).Replace("-", "").ToLower()
     End Function
 
-                                            
 
 
 
-                                            
-                                            
+
+
+
 #End Region
 
 #Region "Serializator"
 
-   Public Function SerializeXml(Of T)() As String
+    Public Function SerializeXml(Of T)() As String
         Try
-            Dim value as String = Encoding.UTF8.GetString(source.ToArray())
-                                                    
+            Dim value As String = Encoding.UTF8.GetString(source.ToArray())
+
             Dim xmlSerializer = New Xml.Serialization.XmlSerializer(GetType(T))
             Using stringWriter = New IO.StringWriter()
                 Using write = Xml.XmlWriter.Create(stringWriter, New Xml.XmlWriterSettings With {
@@ -696,57 +660,22 @@ Public Function SHA512Hash() As String
             Throw New Exception("An error occurred", ex)
         End Try
     End Function
-                                                
-     Public Function DeserializeXml(Of T)() As T
+
+    Public Function DeserializeXml(Of T)() As T
         Try
-            Dim value as string = Encoding.UTF8.Getstring(source.ToArray())
+            Dim value As String = Encoding.UTF8.GetString(source.ToArray())
             Dim xmlSerializer = New Xml.Serialization.XmlSerializer(GetType(T))
             Return CType(xmlSerializer.Deserialize(New IO.StringReader(value)), T)
         Catch ex As Exception
 
         End Try
-    End Function 
-
-    <Obsolete>
-    Public Function BinarySerialize(Of T) As String
-
-        Dim _outms As MemoryStream = New MemoryStream()
-        Dim binaryFormatter As New BinaryFormatter()    
-        binaryFormatter.Serialize(_outms, T)
-        Return Encoding.UTF8.GetString(ms.ToArray())
-
     End Function
 
-    <Obsolete>
-    Public Function BinaryDeSerialize(Of T)() As t
-                                                    
-        Dim bf As New BinaryFormatter()
-        Dim obj As t = Nothing 
-        obj = DirectCast(bf.Deserialize(source, t)
-        Return obj     
-                                                        
-    End Function
 
-    Public Function JsonSerialization(Of T)(Optional Indented As Boolean = True) as String
-            Dim options As New JsonSerializerOptions With {.WriteIndented = Indented}
-            Using writer As New StreamWriter(s)
-        Using jsonWriter As New JsonTextWriter(writer)
-            Dim ser As New JsonSerializer()
-            ser.Serialize(jsonWriter, value)
-            jsonWriter.Flush()
-        End Using
-    End Using
-    End Function
 
-Public Function JsonDeSerialization() As t
-      Dim serializer As JsonSerializer = New JsonSerializer()
-        Dim data As T
-        Using streamReader As StreamReader = New StreamReader(source)
-            data = DirectCast(serializer.Deserialize(streamReader, GetType(T)), T)
-        End Using
-        Return data
-    End Function                                      
+
+
 
 #End Region
-                                            
+
 End Class
