@@ -729,14 +729,22 @@ Public Function SHA512Hash() As String
 
     Public Function JsonSerialization(Of T)(Optional Indented As Boolean = True) as String
             Dim options As New JsonSerializerOptions With {.WriteIndented = Indented}
-            Dim jsonString As String = JsonSerializer.Serialize(source,t, options)
-            Return jsonString
+            Using writer As New StreamWriter(s)
+        Using jsonWriter As New JsonTextWriter(writer)
+            Dim ser As New JsonSerializer()
+            ser.Serialize(jsonWriter, value)
+            jsonWriter.Flush()
+        End Using
+    End Using
     End Function
 
-Public Function JsonDeSerialization(ByVal value As String) As t
-            Dim jsonString As String = Encoding.UTF8.GetString(source.ToArray)
-            Dim obj As t = JsonSerializer.Deserialize(Of t)(jsonString)
-            Return obj
+Public Function JsonDeSerialization() As t
+      Dim serializer As JsonSerializer = New JsonSerializer()
+        Dim data As T
+        Using streamReader As StreamReader = New StreamReader(source)
+            data = DirectCast(serializer.Deserialize(streamReader, GetType(T)), T)
+        End Using
+        Return data
     End Function                                      
 
 #End Region
