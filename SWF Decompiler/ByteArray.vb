@@ -322,7 +322,7 @@ Public Class ByteArray
         Return CUShort(((bytes(0) And &HFF) << 8) Or (bytes(1) And &HFF))
     End Function
 
-    Public Function ReadInteger() As Integer
+    Public Function ReadReverseInt() As Integer
         Dim bytes As Byte() = ReadBytesEndian(4)
         Dim value As Integer = bytes(3) << 24 Or CInt(bytes(2)) << 16 Or CInt(bytes(1)) << 8 Or bytes(0)
         Return value
@@ -527,62 +527,6 @@ Public Class ByteArray
 
 #End Region
 
-#Region "Mã hóa dữ liệu"
-
-    Public Sub MochiDecrypt()
-
-        Dim bytes As ByteArray = New ByteArray()
-        Dim data As ByteArray = New ByteArray()
-        data.WriteBytes(bytes, 8)
-        Dim payload As Byte() = data.ToArray()
-
-        Dim S As New List(Of Byte)
-        Dim i As Integer = 0
-        Dim j As Integer = 0
-        Dim k As Integer = 0
-        Dim n As Integer = 0
-        Dim u As Integer = 0
-        Dim v As Integer = 0
-
-        n = payload.Length - 32
-        While i < 256
-            S.Add(CByte(i))
-            i += 1
-        End While
-        j = 0
-        i = 0
-        While i < 256
-            j = (j + S(i) + payload(n + (i And 31))) And 255
-            u = S(i)
-            S(i) = S(j)
-            S(j) = CByte(u)
-            i += 1
-        End While
-        If n > 131072 Then
-            n = 131072
-        End If
-        j = 0
-        i = 0
-        k = 0
-        While k < n
-            i = (i + 1) And 255
-            u = S(i)
-            j = (j + u) And 255
-            v = S(j)
-            S(i) = CByte(v)
-            S(j) = CByte(u)
-            payload(k) = CByte(payload(k) Xor S((u + v) And 255))
-            k += 1
-        End While
-        Dim ms As MemoryStream = New MemoryStream(payload)
-        source = ms
-        source.Position = 0
-        ms.Close()
-    End Sub
-
-
-#End Region
-
 #Region " Trích xuất dữ liệu "
 
     Public Function BitmapFromBytes(ByVal offset As Integer, ByVal length As Integer) As Bitmap
@@ -633,12 +577,6 @@ Public Class ByteArray
         Return BitConverter.ToString(SHA512.Create().ComputeHash(source)).Replace("-", "").ToLower()
     End Function
 
-
-
-
-
-
-
 #End Region
 
 #Region "Serializator"
@@ -667,7 +605,7 @@ Public Class ByteArray
             Dim xmlSerializer = New Xml.Serialization.XmlSerializer(GetType(T))
             Return CType(xmlSerializer.Deserialize(New IO.StringReader(value)), T)
         Catch ex As Exception
-
+            Throw New Exception("An error occurred", ex)
         End Try
     End Function
 

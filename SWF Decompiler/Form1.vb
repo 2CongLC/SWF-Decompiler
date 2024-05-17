@@ -57,4 +57,30 @@
             MessageBox.Show(ex.ToString())
         End Try
     End Sub
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        Try
+            OpenFileDialog1.Filter = "All Files(*.swf)|*.swf"
+
+
+
+            If OpenFileDialog1.ShowDialog = DialogResult.OK Then
+
+                Dim source As SWF = New SWF(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
+                TextBox1.Text = source.Signature
+                TextBox2.Text = source.Version
+                TextBox3.Text = source.Filesize
+                TextBox4.Text = source.Width
+                TextBox5.Text = source.Heigth
+                TextBox6.Text = source.FrameRate
+                TextBox7.Text = source.FrameCount
+                TextBox8.Text = source.Tags
+
+
+            End If
+
+        Catch ex As Exception
+            MessageBox.Show(ex.ToString())
+        End Try
+    End Sub
 End Class

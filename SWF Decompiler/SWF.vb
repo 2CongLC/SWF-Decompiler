@@ -15,6 +15,7 @@ Public Class SWF
 
     Private _fileSize As Byte()
 
+
     Private _framesize As ByteArray
 
     Private _framerate As Byte()
@@ -95,7 +96,7 @@ Public Class SWF
         len = len Or (CUInt(_filesize(0)) << 0)
         len = len Or (CUInt(_filesize(1)) << 8)
         len = len Or (CUInt(_filesize(2)) << 16)
-        len = len Or (CUInt(_filesize(3)) << 24)
+        len = len Or (CUInt(_fileSize(3)) << 24)
         Return len
     End Function
 
@@ -152,6 +153,8 @@ End Property
 
     Public Function FrameRate() As Double
 
+        If (Signature() = "CWS") OrElse (Signature() = "ZWS") Then Exit Function
+
         Dim a As Byte = _framerate(0)
         Dim b As Byte = _framerate(1)
         Dim c As Double = (a + b) / 100
@@ -161,6 +164,8 @@ End Property
 
     Public Function FrameCount() As Integer
 
+        If (Signature() = "CWS") OrElse (Signature() = "ZWS") Then Exit Function
+
         Dim a As Byte = _framecount(0)
         Dim b As Byte = _framecount(1)
         Dim c As Integer
@@ -168,6 +173,17 @@ End Property
         Return c
 
     End Function
+
+    Public Function Tags() As Integer
+
+        If (Signature() = "CWS") OrElse (Signature() = "ZWS") Then Exit Function
+        If _tags.Length <> 0 Then
+            Return _tags.Length
+        End If
+
+
+    End Function
+
 
     Private Function CompressCWS() As Byte()
 
@@ -177,7 +193,7 @@ End Property
         Dim buffer As ByteArray = New ByteArray()
         buffer.WriteMultiByte("CWS", "us-ascii")
         buffer.WriteByte(Version)
-        buffer.WriteByte(Filesize)
+        buffer.WriteReverseInt(Filesize)
         buffer.WriteBytes(data)
         Return buffer.ToArray()
     End Function
@@ -190,7 +206,7 @@ End Property
         Dim buffer As ByteArray = New ByteArray()
         buffer.WriteMultiByte("FWS", "us-ascii")
         buffer.WriteByte(Version)
-        buffer.WriteByte(Filesize)
+        buffer.WriteReverseInt(Filesize)
         buffer.WriteBytes(data)
         Return buffer.ToArray()
 
@@ -213,7 +229,7 @@ End Property
         Dim buffer As ByteArray = New ByteArray()
         buffer.WriteMultiByte("ZWS", "us-ascii")
         buffer.WriteByte(Version)
-        buffer.WriteByte(Filesize)
+        buffer.WriteReverseInt(Filesize)
         buffer.WriteByte(compressedLen)
         buffer.WriteBytes(lzmaprops)
         buffer.WriteBytes(lzmadata)
@@ -230,7 +246,7 @@ End Property
         Dim buffer As ByteArray = New ByteArray()
         buffer.WriteMultiByte("FWS", "us-ascii")
         buffer.WriteByte(Version)
-        buffer.WriteByte(Filesize)
+        buffer.WriteReverseInt(Filesize)
         buffer.WriteBytes(data)
         Return buffer.ToArray()
 
@@ -271,7 +287,52 @@ End Sub
     End Sub
 
 
+    Public Function MochiDecrypt() As Byte()
 
+        Dim data As ByteArray = New ByteArray()
+        data.WriteBytes(source, 8)
+        Dim payload As Byte() = data.ToArray()
+
+        Dim S As New List(Of Byte)
+        Dim i As Integer = 0
+        Dim j As Integer = 0
+        Dim k As Integer = 0
+        Dim n As Integer = 0
+        Dim u As Integer = 0
+        Dim v As Integer = 0
+
+        n = payload.Length - 32
+        While i < 256
+            S.Add(CByte(i))
+            i += 1
+        End While
+        j = 0
+        i = 0
+        While i < 256
+            j = (j + S(i) + payload(n + (i And 31))) And 255
+            u = S(i)
+            S(i) = S(j)
+            S(j) = CByte(u)
+            i += 1
+        End While
+        If n > 131072 Then
+            n = 131072
+        End If
+        j = 0
+        i = 0
+        k = 0
+        While k < n
+            i = (i + 1) And 255
+            u = S(i)
+            j = (j + u) And 255
+            v = S(j)
+            S(i) = CByte(v)
+            S(j) = CByte(u)
+            payload(k) = CByte(payload(k) Xor S((u + v) And 255))
+            k += 1
+        End While
+        Return payload
+    End Function
 
 
 
