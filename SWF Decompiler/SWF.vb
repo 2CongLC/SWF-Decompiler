@@ -14,6 +14,7 @@ Public Class SWF
     Private _version As Byte()
 
     Private _fileSize As Byte()
+    Private _filesize1 As ByteArray
 
 
     Private _framesize As ByteArray
@@ -50,6 +51,9 @@ Public Class SWF
         fsize.WriteBytes(source, 4, 4) 'Offset = 4, Length = 4
 
         _fileSize = fsize.ToArray()
+
+        _filesize1 = New ByteArray()
+        _filesize1.WriteBytes(source, 4, 4)
 
 
         If signature = "FWS" Then
@@ -90,14 +94,18 @@ Public Class SWF
     Public Function Version() As UInteger
         Return CUInt(_version(0))
     End Function
+    Public Function ReadReverseUInt() As UInteger
+        Dim bytes() As Byte = _filesize1.ToArray()
+        Dim len As UInteger = 0
+        len = len Or (CUInt(bytes(0)) << 0)
+        len = len Or (CUInt(bytes(1)) << 8)
+        len = len Or (CUInt(bytes(2)) << 16)
+        len = len Or (CUInt(bytes(3)) << 24)
+        Return len
+    End Function
 
     Public Function Filesize() As UInteger
-        Dim len As UInteger = 0
-        len = len Or (CUInt(_filesize(0)) << 0)
-        len = len Or (CUInt(_filesize(1)) << 8)
-        len = len Or (CUInt(_filesize(2)) << 16)
-        len = len Or (CUInt(_fileSize(3)) << 24)
-        Return len
+        Return ReadReverseUInt()
     End Function
 
     Public ReadOnly Property Width as integer
