@@ -268,7 +268,7 @@ Public Class ByteArray
 
     Public Sub ReadBytes(bytes As ByteArray, offset As UInteger, length As UInteger)
         Dim content As Byte() = New Byte(length - 1) {}
-        source.Read(content, offset, length)
+        br.Read(content, offset, length)
         bytes.WriteBytes(New ByteArray(content), 0, content.Length)
     End Sub
 
@@ -278,7 +278,7 @@ Public Class ByteArray
     End Function
 
     Public Function ReadBoolean() As Boolean
-        Return source.ReadByte = 1
+        Return br.ReadByte = 1
     End Function
 
     Public Function ReadDouble() As Double
@@ -293,12 +293,12 @@ Public Class ByteArray
     End Function
 
     Public Function ReadSByte() As SByte
-        Dim buffer As SByte = CSByte(source.ReadByte)
+        Dim buffer As SByte = CSByte(br.ReadByte)
         Return buffer
     End Function
 
     Public Function ReadByte() As Byte
-        Return source.ReadByte
+        Return br.ReadByte
     End Function
 
     Public Function ReadSingle() As Single
@@ -322,9 +322,10 @@ Public Class ByteArray
         Return CUShort(((bytes(0) And &HFF) << 8) Or (bytes(1) And &HFF))
     End Function
 
-    Public Function ReadReverseInt() As Integer
+    Public Function ReadInt() As Integer
         Dim bytes As Byte() = ReadBytesEndian(4)
-        Dim value As Integer = bytes(3) << 24 Or CInt(bytes(2)) << 16 Or CInt(bytes(1)) << 8 Or bytes(0)
+        'Dim value As Integer = bytes(3) << 24 Or CInt(bytes(2)) << 16 Or CInt(bytes(1)) << 8 Or bytes(0)
+        Dim value As Integer = (bytes(0) << 24) Or (bytes(1) << 16) Or (bytes(2) << 8) Or bytes(3)
         Return value
     End Function
 
@@ -364,6 +365,27 @@ Public Class ByteArray
         Return value
     End Function
 
+ Public Function ReadReverseInt() As Integer
+    Dim bytes() As Byte = ReadBytesEndian(4)
+    Dim val As Integer = 0
+    val += bytes(3) << 24
+    val += bytes(2) << 16
+    val += bytes(1) << 8
+    val += bytes(0)
+    Return val
+End Function                             
+
+Public Function ReadString() As String
+    'Get the length of the string (first 2 bytes).
+    Dim length As Integer = ReadUShort()
+    Return ReadUTF(length)
+End Function
+
+   Public Function ReadLongString() as String
+        Dim length As Integer = ReadInt()
+        Return ReadUTF(length)
+   End Function                                     
+                                    
 #End Region
 
 #Region "Ghi dữ liệu"
@@ -372,7 +394,7 @@ Public Class ByteArray
         If bytes Is Nothing Then
             Return
         End If
-        source.Write(bytes, 0, bytes.Length)
+        bw.Write(bytes, 0, bytes.Length)
     End Sub
 
     Private Sub WriteBigEndian(bytes As Byte())
@@ -380,11 +402,11 @@ Public Class ByteArray
             Return
         End If
         For i = bytes.Length - 1 To 0 Step -1
-            source.WriteByte(bytes(i))
+            bw.Write(bytes(i))
         Next
     End Sub
 
-    Friend Sub WriteBytesEndian(bytes As Byte())
+    Public Sub WriteBytesEndian(bytes As Byte())
         If _endian = Endians.LITTLE_ENDIAN Then
             WriteLittleEndian(bytes)
         Else
@@ -393,11 +415,11 @@ Public Class ByteArray
     End Sub
 
     Public Sub WriteBoolean(value As Boolean)
-        source.WriteByte(If(value, CByte(1), CByte(0)))
+     bw.Write(If(value, CByte(1), CByte(0)))
     End Sub
 
     Public Sub WriteByte(value As Byte)
-        source.WriteByte(value)
+        bw.Write(value)
     End Sub
 
     Public Sub WriteBytes(bytes As ByteArray, Optional offset As UInteger = 0, Optional length As UInteger = 0)
@@ -406,7 +428,7 @@ Public Class ByteArray
         If length = 0 Then
             length = currentlength
         End If
-        source.Write(bytes.ToArray(), offset, length)
+        bw.Write(bytes.ToArray(), offset, length)
     End Sub
 
     Public Sub WriteDouble(value As Double)
@@ -414,7 +436,7 @@ Public Class ByteArray
         WriteBytesEndian(bytes)
     End Sub
 
-    Public Sub WriteFloat(value As Single)
+    Public Sub WriteSingle(value As Single)
         Dim bytes As Byte() = BitConverter.GetBytes(value)
         WriteBytesEndian(bytes)
     End Sub
@@ -480,6 +502,33 @@ Public Class ByteArray
     End Sub
 
 
+Private Sub WriteLongUTF(ByVal value As String)
+    Dim utf8Encoding As New UTF8Encoding(True, True)
+    Dim byteCount As UInteger = CUInt(utf8Encoding.GetByteCount(value))
+    Dim buffer As Byte() = New Byte(byteCount + 4 - 1) {}
+    'unsigned long (always 32 bit, big endian byte order)
+    buffer(0) = CByte((byteCount >> &H18) And &HFF)
+    buffer(1) = CByte((byteCount >> &H10) And &HFF)
+    buffer(2) = CByte((byteCount >> 8) And &HFF)
+    buffer(3) = CByte((byteCount And &HFF))
+    Dim bytesEncodedCount As Integer = utf8Encoding.GetBytes(value, 0, value.Length, buffer, 4)
+    If buffer.Length > 0 Then
+        bw.Write(buffer, 0, buffer.Length)
+    End If
+End Sub
+
+                              
+   Public Sub WriteString(ByVal value As String)
+    Dim utf8Encoding As New UTF8Encoding(True, True)
+    Dim byteCount As Integer = utf8Encoding.GetByteCount(value)
+    If byteCount < 65536 Then
+        WriteUTF(value)
+    Else
+        WriteLongUTF(value)
+    End If
+End Sub
+
+
 
 #End Region
 
@@ -539,8 +588,9 @@ Public Class ByteArray
         Return String.Join("", source.ToArray().Select(Function(by) by.ToString("X2")))
     End Function
 
-    Private Function ConvertFromHex(ByVal hexstring As String) As Byte()
-
+    Public Function ConvertFromHex() As Byte()
+                                                    
+        Dim hexstring as String = Encoding.UTF8.GetString(source.ToArray())
         Dim NumberChars As Integer = hexstring.Length
         Dim bytes As Byte() = New Byte(NumberChars \ 2 - 1) {}
         For i As Integer = 0 To NumberChars - 1 Step 2
@@ -609,8 +659,38 @@ Public Class ByteArray
         End Try
     End Function
 
+<Obsolete>
+    Public Function SerializeBinary(Of T)() As Byte()
+        Dim obj As String = Encoding.UTF8.GetString(source.ToArray())
+        Using memStream As New MemoryStream()
+            Dim binSerializer As New BinaryFormatter()
+            binSerializer.Serialize(memStream, obj)
+            Return memStream.ToArray()
+        End Using
+    End Function
 
+    <Obsolete>
+    Public Function DeserializeBinary(Of T)() As T
+        Dim obj As T = Nothing
+        Using memStream As New MemoryStream(source.ToArray())
+            Dim binSerializer As New BinaryFormatter()
+            obj = DirectCast(binSerializer.Deserialize(memStream), T)
+        End Using
+        Return obj
+    End Function
+                                                
+Public Function SerializeJson(Of T)(Optional Indented As Boolean = True) as String
+        Dim obj As String = Encoding.UTF8.GetString(source.ToArray())
+        Dim options As New JsonSerializerOptions With {.WriteIndented = Indented}
+            Dim result As String = JsonSerializer.Serialize(obj, options)
+            Return result
+    End Function
 
+Public Function DeSerializeJson(Of T)() As t
+            Dim obj As String = Encoding.UTF8.GetString(source.ToArray())
+            Dim result As t = JsonSerializer.Deserialize(Of t)(obj)
+            Return result
+    End Function
 
 
 
