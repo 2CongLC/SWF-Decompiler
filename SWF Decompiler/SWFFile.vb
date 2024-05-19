@@ -27,7 +27,7 @@ Public Class SWFFile
         source.Position = 0
         _signature = Encoding.ASCII.GetString(source.ReadBytesEndian(3))
         source.Position = 3
-        _version = souce.ReadInt()
+        _version = souce.ReadByte
         source.Position = 4
         Dim len As UInteger = 0
         len = len Or (source.ReadByte << 0)
