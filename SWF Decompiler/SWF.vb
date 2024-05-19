@@ -12,19 +12,13 @@ Public Class SWF
     Private _version As Integer
     Private _fileSize As UInteger
 
-
-
-    Private _framesize As ByteArray
-
-    Private _framerate As Byte()
-
-    Private _framecount As Byte()
-
-    Private _tags As Byte()
-
     Private mWidth As Integer = 0
-
     Private mHeigth As Integer = 0
+    Private _framerate As double
+    Private _framecount As Byte()
+    Private data as ByteArray
+
+    
 
 
     Public Sub New(ByVal buffer As Byte())
@@ -43,46 +37,10 @@ Public Class SWF
         len = len Or (CUInt(bytes(3)) << 24)
         _filesize = len
         source.Position  = 8
-        If (_signature = "FWS") Then
-        
-        
-
-        
-
-        
-        
-        
-
-    End Sub
-
-
-    Public Function Signature() As String
-        Return Encoding.Default.GetString(_signature)
-    End Function
-
-    Public Function Version() As UInteger
-        Return CUInt(_version(0))
-    End Function
-    
-
-    Public Function Filesize() As UInteger
-        Return ReadReverseUInt()
-    End Function
-
-    Public ReadOnly Property Width as integer
-    Get
-      Return mWidth
-    End Get
-End Property
-
-Public ReadOnly Property Heigth as integer
-    Get
-      Return mHeigth
-    End Get
-End Property
-
-    Public Sub FrameSize()
-        Dim b As Integer = _framesize.GetNextByte()
+        If (_signature = "CWS") Then
+        source.Uncompress()
+        End if
+        Dim b As Integer = source.GetNextByte()
         Dim nb As Integer = b >> 3
         b = b And 7
         b <<= 5
@@ -101,7 +59,7 @@ End Property
                 bitcount += 1
 
                 If cb < 0 Then
-                    b = _framesize.GetNextByte()
+                    b = source.GetNextByte()
                     cb = 7
                 End If
             End While
@@ -118,35 +76,59 @@ End Property
                     mHeigth = value - mHeigth
             End Select
         Next
+        source.Position = 17
+        Dim a1 As Byte = source.ReadByte
+        Dim b1 As Byte = source.ReadByte
+        Dim c1 As Double = (a1 + b1) / 100
+        _framerate = c
+       source.Position = 19
+        Dim a2 As Byte = source.Readbyte
+        Dim b2 As Byte = source.Readbyte
+        Dim c2 As Integer
+        c2 += (a2 << 8 * b2)
+        _framecount = c2
+    source.Position = 21
+      data = New ByteArray()
+    data.WriteBytes(source,21)
+              
     End Sub
 
+
+    Public Function Signature() As String
+        Return _signature
+    End Function
+
+    Public Function Version() As UInteger
+        Return _version
+    End Function
+    
+
+    Public Function Filesize() As UInteger
+        Return _filesize
+    End Function
+
+    Public ReadOnly Property Width as integer
+    Get
+      Return mWidth
+    End Get
+End Property
+
+Public ReadOnly Property Heigth as integer
+    Get
+      Return mHeigth
+    End Get
+End Property
+
     Public Function FrameRate() As Double
-
-        Dim a As Byte = _framerate(0)
-        Dim b As Byte = _framerate(1)
-        Dim c As Double = (a + b) / 100
-        Return c
-
+  Return _framerate
     End Function
 
     Public Function FrameCount() As Integer
-
-        Dim a As Byte = _framecount(0)
-        Dim b As Byte = _framecount(1)
-        Dim c As Integer
-        c += (a << 8 * b)
-        Return c
-
+        Return _framecount
     End Function
 
     Public Function Tags() As Integer
-
-
-        If _tags.Length <> 0 Then
-            Return _tags.Length
-        End If
-
-
+            Return data.ToArray().Length
     End Function
 
 
