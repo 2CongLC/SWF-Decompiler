@@ -9,9 +9,9 @@ Public Class SWF
 
     Private source As ByteArray
 
-    Private _signature As Byte()
+    Private _signature As String
 
-    Private _version As Byte()
+    Private _version As 
 
     Private _fileSize As Byte()
     Private _filesize1 As ByteArray
@@ -33,55 +33,15 @@ Public Class SWF
     Public Sub New(ByVal buffer As Byte())
 
         source = New ByteArray(buffer)
+        source.Positon = 0
+        _
+        
 
-        Dim sign As ByteArray = New ByteArray()
+        
 
-        sign.WriteBytes(source, 0, 3) ' Offset = 0, Length = 3
-
-        _signature = sign.ToArray()
-
-        Dim ver As ByteArray = New ByteArray()
-
-        ver.WriteBytes(source, 3, 1) ' Offset = 3, Length = 1
-
-        _version = ver.ToArray()
-
-        Dim fsize As ByteArray = New ByteArray()
-
-        fsize.WriteBytes(source, 4, 4) 'Offset = 4, Length = 4
-
-        _fileSize = fsize.ToArray()
-
-        _filesize1 = New ByteArray()
-        _filesize1.WriteBytes(source, 4, 4)
-
-
-        Dim frsize As ByteArray = New ByteArray()
-
-        frsize.WriteBytes(source, 8, 9)
-
-        _framesize = frsize
-
-        Dim frrate As ByteArray = New ByteArray()
-
-        frrate.WriteBytes(source, 17, 2)
-
-        _framerate = frrate.ToArray()
-
-        Dim frcount As ByteArray = New ByteArray()
-
-        frcount.WriteBytes(source, 19, 2)
-
-        _framecount = frcount.ToArray()
-
-        Dim tags As ByteArray = New ByteArray()
-
-        tags.WriteBytes(source, 21)
-
-        _tags = tags.ToArray()
-
-        FrameSize()
-
+        
+        
+        
 
     End Sub
 
