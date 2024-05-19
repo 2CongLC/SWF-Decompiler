@@ -2,6 +2,8 @@ Imports System
 Imports System.IO
 Imports System.Text
 
+
+'https://github.com/SFTtech/openage/blob/master/doc/media/drs-files.md
 Public Class DRSFile
 
 
