@@ -35,6 +35,17 @@ foffset = source.ReadInt()
 
 End Sub
 
+Public Structure SUBFOLDER
+    Public Extension as string
+    Public Offset as integer
+    Public NumFiles as integer
+End Structure
+  
+Public Structure SUBFILE
+    Public ID as integer
+    Public Offset As Integer
+    Public size as integer
+End Structure
 
 
 
