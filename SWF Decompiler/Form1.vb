@@ -7,7 +7,7 @@
 
             If OpenFileDialog1.ShowDialog = DialogResult.OK AndAlso SaveFileDialog1.ShowDialog = DialogResult.OK Then
 
-                Dim source As SWF = New SWF(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
+                Dim source As SWFFile = New SWFFile(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
 
                 source.Compress(SaveFileDialog1.FileName, SWF.CompressTionTypes.CWS)
 
@@ -26,7 +26,7 @@
 
             If OpenFileDialog1.ShowDialog = DialogResult.OK AndAlso SaveFileDialog1.ShowDialog = DialogResult.OK Then
 
-                Dim source As SWF = New SWF(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
+                Dim source As SWFFile = New SWFFile(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
 
                 source.Compress(SaveFileDialog1.FileName, SWF.CompressTionTypes.ZWS)
 
@@ -46,7 +46,7 @@
 
             If OpenFileDialog1.ShowDialog = DialogResult.OK AndAlso SaveFileDialog1.ShowDialog = DialogResult.OK Then
 
-                Dim source As SWF = New SWF(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
+                Dim source As SWFFile = New SWFFile(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
 
                 source.DeCompress(SaveFileDialog1.FileName)
 
@@ -66,7 +66,7 @@
 
             If OpenFileDialog1.ShowDialog = DialogResult.OK Then
 
-                Dim source As SWF = New SWF(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
+                Dim source As SWFFile = New SWFFile(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
                 TextBox1.Text = source.Signature
                 TextBox2.Text = source.Version
                 TextBox3.Text = source.Filesize
