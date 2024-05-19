@@ -29,12 +29,11 @@ Public Class SWF
         source.Position = 3
         _version = souce.ReadInt()
         source.Position = 4
-        Dim bytes as Byte() = source.ReadBytesEndian(4)
         Dim len As UInteger = 0
-        len = len Or (CUInt(bytes(0)) << 0)
-        len = len Or (CUInt(bytes(1)) << 8)
-        len = len Or (CUInt(bytes(2)) << 16)
-        len = len Or (CUInt(bytes(3)) << 24)
+        len = len Or (source.ReadByte << 0)
+        len = len Or (source.ReadByte << 8)
+        len = len Or (source.ReadByte << 16)
+        len = len Or (source.Readbyte << 24)
         _filesize = len
         source.Position  = 8
         If (_signature = "CWS") Then
