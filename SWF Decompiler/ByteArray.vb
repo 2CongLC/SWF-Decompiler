@@ -4,12 +4,14 @@ Imports System.Text.Json
 Imports System.IO
 Imports System.IO.Compression
 Imports System.Runtime.Serialization.Json
-Imports SevenZip
-Imports System.Xml
-Imports System.Runtime.InteropServices
-Imports Lzma
 Imports System.Runtime.Serialization.Formatters.Binary
 Imports System.Security.Cryptography
+Imports System.Xml
+Imports System.Runtime.InteropServices
+Imports SevenZip
+Imports Lzma
+Imports Snappier
+Imports ZstdNet
 
 Public Enum Endians
     BIG_ENDIAN = 0
@@ -21,6 +23,8 @@ Public Enum CompressionAlgorithm
     Zlib
     Lzma
     Brotli
+    Snappy
+    Zstd
 End Enum
 
 Public Class ByteArray
@@ -110,6 +114,12 @@ Public Class ByteArray
         index += 1
         Return result
     End Function
+    Public Sub SeekRead(ByVal Offset As Long, Optional origin As SeekOrigin = SeekOrigin.Begin)
+        br.BaseStream.Seek(Offset, origin)
+    End Sub
+    Public Sub SeekWrite(ByVal Offset As Long, Optional origin As SeekOrigin = SeekOrigin.Begin)
+        bw.BaseStream.Seek(Offset, origin)
+    End Sub
 
 #End Region
 
@@ -167,6 +177,27 @@ Public Class ByteArray
                     End Using
                 End Using
                 Exit Select
+            Case CompressionAlgorithm.Snappy
+                Using _inms As MemoryStream = New MemoryStream(source.ToArray())
+                    Using _outms As MemoryStream = New MemoryStream()
+                        Using sns As SnappyStream = New SnappyStream(_outms, CompressionMode.Compress)
+                            _inms.CopyTo(sns)
+                        End Using
+                        source = _outms
+                    End Using
+                End Using
+                Exit Select
+            Case CompressionAlgorithm.Zstd
+                Using _inms As MemoryStream = New MemoryStream(source.ToArray())
+                    Using _outms As MemoryStream = New MemoryStream()
+                        Using zts As ZstdNet.CompressionStream = New CompressionStream(_outms)
+                            _inms.CopyTo(zts)
+                        End Using
+                        source = _outms
+                    End Using
+                End Using
+                Exit Select
+
 
         End Select
 
@@ -234,6 +265,31 @@ Public Class ByteArray
                     End Using
                 End Using
                 Exit Select
+            Case CompressionAlgorithm.Snappy
+                Position = 0
+                Using _inms As MemoryStream = New MemoryStream(source.ToArray())
+                    Using _outms As MemoryStream = New MemoryStream()
+                        Using sns As SnappyStream = New SnappyStream(_inms, CompressionMode.Decompress)
+                            sns.CopyTo(_outms)
+                        End Using
+                        source = _outms
+                        source.Position = 0
+                    End Using
+                End Using
+                Exit Select
+            Case CompressionAlgorithm.Zstd
+                Position = 0
+                Using _inms As MemoryStream = New MemoryStream(source.ToArray())
+                    Using _outms As MemoryStream = New MemoryStream()
+                        Using zst As ZstdNet.DecompressionStream = New DecompressionStream(_inms)
+                            zst.CopyTo(_outms)
+                        End Using
+                        source = _outms
+                        source.Position = 0
+                    End Using
+                End Using
+                Exit Select
+
 
         End Select
     End Sub
@@ -293,8 +349,7 @@ Public Class ByteArray
     End Function
 
     Public Function ReadSByte() As SByte
-        Dim buffer As SByte = CSByte(br.ReadByte)
-        Return buffer
+        Return br.ReadSByte
     End Function
 
     Public Function ReadByte() As Byte
@@ -329,7 +384,7 @@ Public Class ByteArray
         Return value
     End Function
 
-    Public Function ReadUInteger() As UInteger
+    Public Function ReadUInt() As UInteger
         Dim bytes As Byte() = ReadBytesEndian(4)
         Return BitConverter.ToUInt32(bytes, 0)
     End Function
@@ -365,6 +420,7 @@ Public Class ByteArray
         Return value
     End Function
 
+
     Public Function ReadReverseInt() As Integer
         Dim bytes() As Byte = ReadBytesEndian(4)
         Dim val As Integer = 0
@@ -376,16 +432,21 @@ Public Class ByteArray
     End Function
 
     Public Function ReadString() As String
-    'Get the length of the string (first 2 bytes).
-    Dim length As Integer = ReadUShort()
-    Return ReadUTF(length)
-End Function
+        'Get the length of the string (first 2 bytes).
+        Dim length As Integer = ReadUShort()
+        Return ReadUTF(length)
+    End Function
 
-   Public Function ReadLongString() as String
+    Public Function ReadLongString() As String
         Dim length As Integer = ReadInt()
         Return ReadUTF(length)
-   End Function                                     
-                                    
+    End Function
+
+    Public Function ReadChars(ByVal count As Integer) As Char()
+        Return br.ReadChars(count)
+    End Function
+
+
 #End Region
 
 #Region "Ghi dữ liệu"
@@ -501,32 +562,32 @@ End Function
         WriteBigEndian(bytes)
     End Sub
 
+    Private Sub WriteLongUTF(ByVal value As String)
+        Dim utf8Encoding As New UTF8Encoding(True, True)
+        Dim byteCount As UInteger = CUInt(utf8Encoding.GetByteCount(value))
+        Dim buffer As Byte() = New Byte(byteCount + 4 - 1) {}
+        'unsigned long (always 32 bit, big endian byte order)
+        buffer(0) = CByte((byteCount >> &H18) And &HFF)
+        buffer(1) = CByte((byteCount >> &H10) And &HFF)
+        buffer(2) = CByte((byteCount >> 8) And &HFF)
+        buffer(3) = CByte((byteCount And &HFF))
+        Dim bytesEncodedCount As Integer = utf8Encoding.GetBytes(value, 0, value.Length, buffer, 4)
+        If buffer.Length > 0 Then
+            bw.Write(buffer, 0, buffer.Length)
+        End If
+    End Sub
 
-Private Sub WriteLongUTF(ByVal value As String)
-    Dim utf8Encoding As New UTF8Encoding(True, True)
-    Dim byteCount As UInteger = CUInt(utf8Encoding.GetByteCount(value))
-    Dim buffer As Byte() = New Byte(byteCount + 4 - 1) {}
-    'unsigned long (always 32 bit, big endian byte order)
-    buffer(0) = CByte((byteCount >> &H18) And &HFF)
-    buffer(1) = CByte((byteCount >> &H10) And &HFF)
-    buffer(2) = CByte((byteCount >> 8) And &HFF)
-    buffer(3) = CByte((byteCount And &HFF))
-    Dim bytesEncodedCount As Integer = utf8Encoding.GetBytes(value, 0, value.Length, buffer, 4)
-    If buffer.Length > 0 Then
-        bw.Write(buffer, 0, buffer.Length)
-    End If
-End Sub
 
-                              
-   Public Sub WriteString(ByVal value As String)
-    Dim utf8Encoding As New UTF8Encoding(True, True)
-    Dim byteCount As Integer = utf8Encoding.GetByteCount(value)
-    If byteCount < 65536 Then
-        WriteUTF(value)
-    Else
-        WriteLongUTF(value)
-    End If
-End Sub
+
+    Public Sub WriteString(ByVal value As String)
+        Dim utf8Encoding As New UTF8Encoding(True, True)
+        Dim byteCount As Integer = utf8Encoding.GetByteCount(value)
+        If byteCount < 65536 Then
+            WriteUTF(value)
+        Else
+            WriteLongUTF(value)
+        End If
+    End Sub
 
 
 
@@ -584,13 +645,13 @@ End Sub
         Return DirectCast(System.ComponentModel.TypeDescriptor.GetConverter(GetType(Bitmap)).ConvertFrom(data), Bitmap)
     End Function
 
-    Public Function ConvertToHex() As String
+    Public Function ConvertToHexString() As String
         Return String.Join("", source.ToArray().Select(Function(by) by.ToString("X2")))
     End Function
 
-    Public Function ConvertFromHex() As Byte()
-                                                    
-        Dim hexstring as String = Encoding.UTF8.GetString(source.ToArray())
+    Public Function ConvertFromHexString() As Byte()
+
+        Dim hexstring As String = Encoding.ASCII.GetString(source.ToArray())
         Dim NumberChars As Integer = hexstring.Length
         Dim bytes As Byte() = New Byte(NumberChars \ 2 - 1) {}
         For i As Integer = 0 To NumberChars - 1 Step 2
@@ -599,8 +660,13 @@ End Sub
         Return bytes
     End Function
 
+    Public Function ConvertToBase64String() As String
+        Return Convert.ToBase64String(source.ToArray())
+    End Function
 
-
+    Public Function ConvertFromBase64String() as  Byte()
+        Return Convert.FromBase64String(Encoding.UTF8.GetString(source.ToArray()))
+    End Function
 
 
 #End Region
@@ -659,7 +725,8 @@ End Sub
         End Try
     End Function
 
-<Obsolete>
+
+    <Obsolete>
     Public Function SerializeBinary(Of T)() As Byte()
         Dim obj As String = Encoding.UTF8.GetString(source.ToArray())
         Using memStream As New MemoryStream()
@@ -678,18 +745,20 @@ End Sub
         End Using
         Return obj
     End Function
-                                                
-Public Function SerializeJson(Of T)(Optional Indented As Boolean = True) as String
+
+
+    Public Function SerializeJson(Of T)(Optional Indented As Boolean = True) As String
         Dim obj As String = Encoding.UTF8.GetString(source.ToArray())
         Dim options As New JsonSerializerOptions With {.WriteIndented = Indented}
-            Dim result As String = JsonSerializer.Serialize(obj, options)
-            Return result
+        Dim result As String = JsonSerializer.Serialize(obj, options)
+        Return result
     End Function
 
-Public Function DeSerializeJson(Of T)() As t
-            Dim obj As String = Encoding.UTF8.GetString(source.ToArray())
-            Dim result As t = JsonSerializer.Deserialize(Of t)(obj)
-            Return result
+
+    Public Function DeSerializeJson(Of T)() As T
+        Dim obj As String = Encoding.UTF8.GetString(source.ToArray())
+        Dim result As T = JsonSerializer.Deserialize(Of T)(obj)
+        Return result
     End Function
 
 

@@ -55,34 +55,16 @@ Public Class SWF
         _filesize1 = New ByteArray()
         _filesize1.WriteBytes(source, 4, 4)
 
+        Dim data As ByteArray = New ByteArray()
 
-        If signature = "FWS" Then
-            Dim frsize As ByteArray = New ByteArray()
-
-            frsize.WriteBytes(source, 8, 9)
-
-            _framesize = frsize
-
-            Dim frrate As ByteArray = New ByteArray()
-
-            frrate.WriteBytes(source, 17, 2)
-
-            _framerate = frrate.ToArray()
-
-            Dim frcount As ByteArray = New ByteArray()
-
-            frcount.WriteBytes(source, 19, 2)
-
-            _framecount = frcount.ToArray()
-
-            Dim tags As ByteArray = New ByteArray()
-
-            tags.WriteBytes(source, 21)
-
-            _tags = tags.ToArray()
-
-            FrameSize()
+        If source.read = "CWS" Then
+            data.WriteBytes(source, 8)
+            data.Uncompress()
+        ElseIf Signature() = "FWS" Then
+            data.WriteBytes(source, 12)
+            data.Uncompress()
         End If
+
 
     End Sub
 
