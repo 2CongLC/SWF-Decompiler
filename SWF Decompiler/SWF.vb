@@ -3,7 +3,7 @@ Imports System.IO
 Imports System.Text
 
 
-Public Class SWF
+Public Class SWFFile
 
 
 
@@ -70,16 +70,16 @@ Public Class SWF
                     mWidth = value - mWidth
                 Case 2
                     mHeigth = value
-
                 Case 3
                     mHeigth = value - mHeigth
             End Select
         Next
+    
         source.Position = 17
         Dim a1 As Byte = source.ReadByte
         Dim b1 As Byte = source.ReadByte
         Dim c1 As Double = (a1 + b1) / 100
-        _framerate = c
+        _framerate = c1
        source.Position = 19
         Dim a2 As Byte = source.Readbyte
         Dim b2 As Byte = source.Readbyte
@@ -87,9 +87,9 @@ Public Class SWF
         c2 += (a2 << 8 * b2)
         _framecount = c2
     source.Position = 21
-      data = New ByteArray()
+    data = New ByteArray()
     data.WriteBytes(source,21)
-              
+    
     End Sub
 
 
