@@ -8,13 +8,10 @@ Public Class SWF
 
 
     Private source As ByteArray
-
     Private _signature As String
+    Private _version As Integer
+    Private _fileSize As UInteger
 
-    Private _version As 
-
-    Private _fileSize As Byte()
-    Private _filesize1 As ByteArray
 
 
     Private _framesize As ByteArray
@@ -33,8 +30,21 @@ Public Class SWF
     Public Sub New(ByVal buffer As Byte())
 
         source = New ByteArray(buffer)
-        source.Positon = 0
-        _
+        source.Position = 0
+        _signature = Encoding.ASCII.GetString(source.ReadBytesEndian(3))
+        source.Position = 3
+        _version = souce.ReadInt()
+        source.Position = 4
+        Dim bytes as Byte() = source.ReadBytesEndian(4)
+        Dim len As UInteger = 0
+        len = len Or (CUInt(bytes(0)) << 0)
+        len = len Or (CUInt(bytes(1)) << 8)
+        len = len Or (CUInt(bytes(2)) << 16)
+        len = len Or (CUInt(bytes(3)) << 24)
+        _filesize = len
+        source.Position  = 8
+        If (_signature = "FWS") Then
+        
         
 
         
@@ -53,15 +63,7 @@ Public Class SWF
     Public Function Version() As UInteger
         Return CUInt(_version(0))
     End Function
-    Public Function ReadReverseUInt() As UInteger
-        Dim bytes() As Byte = _filesize1.ToArray()
-        Dim len As UInteger = 0
-        len = len Or (CUInt(bytes(0)) << 0)
-        len = len Or (CUInt(bytes(1)) << 8)
-        len = len Or (CUInt(bytes(2)) << 16)
-        len = len Or (CUInt(bytes(3)) << 24)
-        Return len
-    End Function
+    
 
     Public Function Filesize() As UInteger
         Return ReadReverseUInt()
@@ -120,7 +122,6 @@ End Property
 
     Public Function FrameRate() As Double
 
-
         Dim a As Byte = _framerate(0)
         Dim b As Byte = _framerate(1)
         Dim c As Double = (a + b) / 100
@@ -129,8 +130,6 @@ End Property
     End Function
 
     Public Function FrameCount() As Integer
-
-
 
         Dim a As Byte = _framecount(0)
         Dim b As Byte = _framecount(1)
