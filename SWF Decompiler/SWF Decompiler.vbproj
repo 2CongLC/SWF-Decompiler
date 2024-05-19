@@ -19,6 +19,12 @@
     <Reference Include="Lzma.net">
       <HintPath>..\library\Lzma.net.dll</HintPath>
     </Reference>
+    <Reference Include="Snappier">
+      <HintPath>..\library\Snappier.dll</HintPath>
+    </Reference>
+    <Reference Include="ZstdNet">
+      <HintPath>..\library\net45\ZstdNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

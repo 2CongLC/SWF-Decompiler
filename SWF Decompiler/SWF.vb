@@ -55,15 +55,32 @@ Public Class SWF
         _filesize1 = New ByteArray()
         _filesize1.WriteBytes(source, 4, 4)
 
-        Dim data As ByteArray = New ByteArray()
 
-        If source.read = "CWS" Then
-            data.WriteBytes(source, 8)
-            data.Uncompress()
-        ElseIf Signature() = "FWS" Then
-            data.WriteBytes(source, 12)
-            data.Uncompress()
-        End If
+        Dim frsize As ByteArray = New ByteArray()
+
+        frsize.WriteBytes(source, 8, 9)
+
+        _framesize = frsize
+
+        Dim frrate As ByteArray = New ByteArray()
+
+        frrate.WriteBytes(source, 17, 2)
+
+        _framerate = frrate.ToArray()
+
+        Dim frcount As ByteArray = New ByteArray()
+
+        frcount.WriteBytes(source, 19, 2)
+
+        _framecount = frcount.ToArray()
+
+        Dim tags As ByteArray = New ByteArray()
+
+        tags.WriteBytes(source, 21)
+
+        _tags = tags.ToArray()
+
+        FrameSize()
 
 
     End Sub
@@ -143,7 +160,6 @@ End Property
 
     Public Function FrameRate() As Double
 
-        If (Signature() = "CWS") OrElse (Signature() = "ZWS") Then Exit Function
 
         Dim a As Byte = _framerate(0)
         Dim b As Byte = _framerate(1)
@@ -154,7 +170,7 @@ End Property
 
     Public Function FrameCount() As Integer
 
-        If (Signature() = "CWS") OrElse (Signature() = "ZWS") Then Exit Function
+
 
         Dim a As Byte = _framecount(0)
         Dim b As Byte = _framecount(1)
@@ -166,7 +182,7 @@ End Property
 
     Public Function Tags() As Integer
 
-        If (Signature() = "CWS") OrElse (Signature() = "ZWS") Then Exit Function
+
         If _tags.Length <> 0 Then
             Return _tags.Length
         End If
