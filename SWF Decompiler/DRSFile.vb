@@ -29,11 +29,12 @@ tablecount = source.ReadInt()
 source.Position = 60
 foffset = source.ReadInt()
 
-Dim dlist as subfolder = new subfolder()
+Dim subfolders As New List(Of Subfolder)()
 For i As Integer = 0 To tablecount - 1
-dlist.Extension = source.Readchars(4)
-dlist.Offset = source.Readint()
-dlist.NumFiles = source.Readint()              
+ subfolders.Add(New Subfile() With {
+   .Extensions = source.Readchars(4),
+   .Offset = source.ReadInt(),
+   .NumFiles = source.ReadInt() })                
 Next
 
 
