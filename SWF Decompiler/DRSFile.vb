@@ -13,8 +13,9 @@ Private version as string '4 bytes
 Private ftype as string '12 bytes
 Private tablecount as integer '4 bytes
 Private foffset as integer '4 bytes
-
-
+Private subfolders As New List(Of Subfolder)()
+Private subfiles as New List(Of Subfile)()
+ 
 Public Sub New(Byval buffer as Byte())
 
 source = New ByteArray(buffer)
@@ -29,15 +30,20 @@ tablecount = source.ReadInt()
 source.Position = 60
 foffset = source.ReadInt()
 
-Dim subfolders As New List(Of Subfolder)()
 For i As Integer = 0 To tablecount - 1
- subfolders.Add(New Subfile() With {
+ subfolders.Add(New Subfolder() With {
    .Extensions = source.Readchars(4),
    .Offset = source.ReadInt(),
    .NumFiles = source.ReadInt() })                
 Next
-
-
+   
+ For j as Integer = 0 To Subfolders.NumFiles - 1
+   subfiles.Add(New Subfile() With {
+     .ID = source.ReadInt(),
+     .Offset = source.ReadInt(),
+     .size = source.ReadInt()})
+  Next
+  
 End Sub
 
 Public Structure SUBFOLDER
@@ -51,12 +57,5 @@ Public Structure SUBFILE
     Public Offset As Integer
     Public size as integer
 End Structure
-
-
-
-
-
-
-
 
 End Class 
