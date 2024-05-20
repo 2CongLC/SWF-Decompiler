@@ -3,7 +3,7 @@ Imports System.IO
 Imports System.Text
 
 
-Public Class SWF
+Public Class SWFFile
 
 
 
@@ -13,9 +13,7 @@ Public Class SWF
 
     Private _version As Byte()
 
-    Private _fileSize As Byte()
     Private _filesize1 As ByteArray
-
 
     Private _framesize As ByteArray
 
@@ -46,15 +44,8 @@ Public Class SWF
 
         _version = ver.ToArray()
 
-        Dim fsize As ByteArray = New ByteArray()
-
-        fsize.WriteBytes(source, 4, 4) 'Offset = 4, Length = 4
-
-        _fileSize = fsize.ToArray()
-
         _filesize1 = New ByteArray()
-        _filesize1.WriteBytes(source, 4, 4)
-
+        _filesize1.WriteBytes(source, 4, 4) 'Offset = 4, Length = 4
 
         Dim frsize As ByteArray = New ByteArray()
 
@@ -87,7 +78,7 @@ Public Class SWF
 
 
     Public Function Signature() As String
-        Return Encoding.Default.GetString(_signature)
+        Return Encoding.ASCII.GetString(_signature)
     End Function
 
     Public Function Version() As UInteger
@@ -107,17 +98,17 @@ Public Class SWF
         Return ReadReverseUInt()
     End Function
 
-    Public ReadOnly Property Width as integer
-    Get
-      Return mWidth
-    End Get
-End Property
+    Public ReadOnly Property Width As Integer
+        Get
+            Return mWidth
+        End Get
+    End Property
 
-Public ReadOnly Property Heigth as integer
-    Get
-      Return mHeigth
-    End Get
-End Property
+    Public ReadOnly Property Heigth As Integer
+        Get
+            Return mHeigth
+        End Get
+    End Property
 
     Public Sub FrameSize()
         Dim b As Integer = _framesize.GetNextByte()
@@ -223,7 +214,7 @@ End Property
         Dim data As ByteArray = New ByteArray()
         data.WriteBytes(source, 8)
 
-        data.Compress(CompressionAlgorithm.LZMA)
+        data.Compress(CompressionAlgorithm.Lzma)
 
         Dim compressedLen As Long = data.BytesAvailable
 
@@ -240,7 +231,7 @@ End Property
         buffer.WriteBytes(lzmaprops)
         buffer.WriteBytes(lzmadata)
 
-         Return buffer.ToArray()
+        Return buffer.ToArray()
 
     End Function
 
@@ -248,7 +239,7 @@ End Property
 
         Dim data As ByteArray = New ByteArray()
         data.WriteBytes(source, 12)
-        data.Uncompress(CompressionAlgorithm.LZMA)
+        data.Uncompress(CompressionAlgorithm.Lzma)
         Dim buffer As ByteArray = New ByteArray()
         buffer.WriteMultiByte("FWS", "us-ascii")
         buffer.WriteByte(Version)
@@ -258,12 +249,12 @@ End Property
 
     End Function
 
-Enum CompressTionTypes
-    CWS
-    ZWS
-End Enum
-    
-Public Sub Compress(Byval outFile as String,Byval CompressTionType as CompressTionTypes)
+    Enum CompressTionTypes
+        CWS
+        ZWS
+    End Enum
+
+    Public Sub Compress(ByVal outFile As String, ByVal CompressTionType As CompressTionTypes)
 
         If CompressTionType = CompressTionTypes.CWS Then
 
@@ -278,15 +269,15 @@ Public Sub Compress(Byval outFile as String,Byval CompressTionType as CompressTi
                 IO.File.WriteAllBytes(outFile, CompressZWS)
             End If
 
-        End if
+        End If
 
-End Sub
+    End Sub
 
     Public Sub DeCompress(ByVal outFile As String)
 
         If Signature() = "CWS" Then
             IO.File.WriteAllBytes(outFile, DeCompressCWS)
-        ElseIf Signature = "ZWS" Then
+        ElseIf Signature() = "ZWS" Then
             IO.File.WriteAllBytes(outFile, DeCompressZWS)
         End If
 
@@ -342,4 +333,4 @@ End Sub
 
 
 
-End Class  
+End Class

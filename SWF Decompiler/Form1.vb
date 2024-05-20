@@ -7,9 +7,9 @@
 
             If OpenFileDialog1.ShowDialog = DialogResult.OK AndAlso SaveFileDialog1.ShowDialog = DialogResult.OK Then
 
-                Dim source As SWF = New SWF(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
+                Dim source As SWFFile = New SWFFile(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
 
-                source.Compress(SaveFileDialog1.FileName, SWF.CompressTionTypes.CWS)
+                source.Compress(SaveFileDialog1.FileName, SWFFile.CompressTionTypes.CWS)
 
                 MessageBox.Show("ok")
             End If
@@ -26,9 +26,9 @@
 
             If OpenFileDialog1.ShowDialog = DialogResult.OK AndAlso SaveFileDialog1.ShowDialog = DialogResult.OK Then
 
-                Dim source As SWF = New SWF(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
+                Dim source As SWFFile = New SWFFile(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
 
-                source.Compress(SaveFileDialog1.FileName, SWF.CompressTionTypes.ZWS)
+                source.Compress(SaveFileDialog1.FileName, SWFFile.CompressTionTypes.ZWS)
 
                 MessageBox.Show("ok")
             End If
@@ -46,7 +46,7 @@
 
             If OpenFileDialog1.ShowDialog = DialogResult.OK AndAlso SaveFileDialog1.ShowDialog = DialogResult.OK Then
 
-                Dim source As SWF = New SWF(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
+                Dim source As SWFFile = New SWFFile(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
 
                 source.DeCompress(SaveFileDialog1.FileName)
 
@@ -66,7 +66,7 @@
 
             If OpenFileDialog1.ShowDialog = DialogResult.OK Then
 
-                Dim source As SWF = New SWF(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
+                Dim source As SWFFile = New SWFFile(IO.File.ReadAllBytes(OpenFileDialog1.FileName))
                 TextBox1.Text = source.Signature
                 TextBox2.Text = source.Version
                 TextBox3.Text = source.Filesize
@@ -82,5 +82,9 @@
         Catch ex As Exception
             MessageBox.Show(ex.ToString())
         End Try
+    End Sub
+
+    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
     End Sub
 End Class
